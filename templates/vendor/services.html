@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vendor Services</title>
+</head>
+<body>
+
+<h1>Services</h1>
+
+<!-- CREATE SERVICE -->
+<h2>Add New Service</h2>
+
+<form method="post" action="{% url 'vendor_service_create' %}">
+    {% csrf_token %}
+
+    <label>Salon:</label><br>
+    <select name="salon_id" required>
+        {% for salon in salons %}
+            <option value="{{ salon.id }}"
+                {% if forloop.first %}selected{% endif %}>
+                {{ salon.name }}
+            </option>
+        {% endfor %}
+    </select>
+    <br><br>
+
+    <label>Service Name:</label><br>
+    <input type="text" name="name" required><br><br>
+
+    <label>Price:</label><br>
+    <input type="number" name="price" step="0.01" required><br><br>
+
+    <label>Duration (minutes):</label><br>
+    <input type="number" name="duration" required><br><br>
+
+    <button type="submit">Create Service</button>
+</form>
+
+
+<hr>
+
+<h3>Filter Services by Salon</h3>
+
+<form method="get" action="">
+    <label>Salon:</label>
+    <select name="salon" onchange="this.form.submit()">
+        <option value="">All Salons</option>
+
+        {% for salon in salons %}
+            <option value="{{ salon.id }}"
+                {% if salon.id|stringformat:"s" == selected_salon_id %}
+                    selected
+                {% endif %}
+            >
+                {{ salon.name }}
+            </option>
+        {% endfor %}
+    </select>
+</form>
+
+<p>Selected salon id: {{ selected_salon_id }}</p>
+
+<hr>
+
+
+
+
+<!-- LIST SERVICES -->
+<h2>Your Services</h2>
+
+<table border="1" cellpadding="8">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for service in services %}
+        <tr>
+            <form method="post" action="{% url 'vendor_service_update' service.id %}">
+                {% csrf_token %}
+
+                <td>
+                    <input type="text" name="name" value="{{ service.name }}" required>
+                </td>
+
+                <td>
+                    <input type="number" name="price" step="0.01" value="{{ service.price }}" required>
+                </td>
+
+                <td>
+                    <input type="number" name="duration" value="{{ service.duration }}" required>
+                </td>
+
+                <td>
+                    {% if service.is_active %}
+                        Enabled
+                    {% else %}
+                        Disabled
+                    {% endif %}
+                </td>
+
+                <td>
+                    <button type="submit">Update</button>
+            </form>
+
+            <!-- ENABLE / DISABLE -->
+            <form method="post" action="{% url 'vendor_service_toggle' service.id %}" style="display:inline;">
+                {% csrf_token %}
+                {% if service.is_active %}
+                    <button type="submit">Disable</button>
+                {% else %}
+                    <button type="submit">Enable</button>
+                {% endif %}
+            </form>
+
+            <!-- DELETE -->
+            <form method="post" action="{% url 'vendor_service_delete' service.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" onclick="return confirm('Delete this service?');">
+                    Delete
+                </button>
+            </form>
+
+                </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No services created yet.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Dashboard</title>
+</head>
+<body>
+
+    <h1>Customer Dashboard</h1>
+
+    <p>Welcome, {{ request.user.first_name }} {{ request.user.last_name }} ({{request.user.username}})</p>
+
+    <hr>
+
+    <h3>Available Actions</h3>
+    <ul>
+        <li>Book Appointment (later)</li>
+        <li>View My Appointments (later)</li>
+        <li>Profile Settings (later)</li>
+    </ul>
+
+    <hr>
+
+    <a href="/logout/">Logout</a>
+
+</body>
+</html>
