@@ -10,6 +10,5 @@ class SalonAdmin(admin.ModelAdmin):
         'pincode',
         'is_active',
     )
-    list_filter = ('is_active')
-    list_filter = ('plan', 'is_active')
-    
+    list_filter = ('is_active',)
+   

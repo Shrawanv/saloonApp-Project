@@ -1,7 +1,5 @@
 from django.contrib import admin
-from django.core.exceptions import ValidationError
-
-from .models import Appointment, LiveQueue
+from .models import Appointment
 
 
 @admin.register(Appointment)
@@ -13,7 +11,7 @@ class AppointmentAdmin(admin.ModelAdmin):
         'status',
     )
 
-    readonly_fields = ('total_amount',)
+    readonly_fields = ()
 
     list_filter = ('status', 'salon')
 
