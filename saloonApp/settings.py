@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -131,6 +132,11 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
+
+DEFAULT_USER_PASSWORD = os.getenv(
+    "DEFAULT_USER_PASSWORD",
+    "12345"
+)
 
 LOGIN_URL = "/login/"
 LOGOUT_REDIRECT_URL = "/login/"

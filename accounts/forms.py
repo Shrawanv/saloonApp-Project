@@ -1,9 +1,6 @@
 from django import forms
 from .models import User
-
-
-DEFAULT_PASSWORD = "12345"
-
+from django.conf import settings
 
 class AdminUserCreationForm(forms.ModelForm):
     """
@@ -27,7 +24,7 @@ class AdminUserCreationForm(forms.ModelForm):
         user = super().save(commit=False)
 
         # 🔐 Set default hashed password
-        user.set_password(DEFAULT_PASSWORD)
+        user.set_password(settings.DEFAULT_USER_PASSWORD)
 
         if commit:
             user.save()
