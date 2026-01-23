@@ -29,5 +29,5 @@ urlpatterns = [
     path("customer/", include("dashboards.customer_urls")),
     
     # APIs
-    path("api/", include("api.urls")),
+    
 ]
