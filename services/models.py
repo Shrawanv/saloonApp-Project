@@ -17,22 +17,3 @@ class Service(models.Model):
     def __str__(self):
         return f"{self.name} - {self.salon.name}"
     
-
-class SalonSlot(models.Model):
-    salon = models.ForeignKey(
-        'salons.Salon',
-        on_delete=models.CASCADE,
-        related_name='slots'
-    )
-    start_time = models.TimeField()
-    end_time = models.TimeField()
-
-    max_capacity = models.PositiveIntegerField(
-        default=1,
-        help_text="Maximum appointments allowed in this slot"
-    )
-
-    def __str__(self):
-        return f"{self.salon.name} | {self.start_time} - {self.end_time}"
-
-

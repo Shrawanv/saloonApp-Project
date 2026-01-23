@@ -24,12 +24,6 @@ class Appointment(models.Model):
     services = models.ManyToManyField(Service)
     appointment_date = models.DateField()
 
-    from services.models import SalonSlot
-    slot = models.ForeignKey(
-        SalonSlot,
-        on_delete=models.CASCADE
-    )
-
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
