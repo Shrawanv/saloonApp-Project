@@ -5,9 +5,9 @@ from services.models import Service
 
 class Appointment(models.Model):
     STATUS_CHOICES = [
-        ("BOOKED", "Booked"),
-        ("CANCELLED", "Cancelled"),
-        ("COMPLETED", "Completed"),
+        ('BOOKED', 'Booked'),
+        ('CANCELLED', 'Cancelled'),
+        ('COMPLETED', 'Completed'),
     ]
 
     user = models.ForeignKey(
@@ -22,10 +22,11 @@ class Appointment(models.Model):
         related_name="appointments"
     )
 
-    appointment_date = models.DateField()
-    slot_start = models.TimeField()
-
     services = models.ManyToManyField(Service)
+
+    appointment_date = models.DateField()
+
+    slot_start = models.TimeField() 
 
     status = models.CharField(
         max_length=20,
@@ -33,7 +34,18 @@ class Appointment(models.Model):
         default="BOOKED"
     )
 
+    total_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return f"{self.salon} | {self.appointment_date} {self.slot_start}"
+    def calculate_total_amount(self):
+        return sum(service.price for service in self.services.all())
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.total_amount = self.calculate_total_amount()
+        super().save(update_fields=["total_amount"])

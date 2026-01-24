@@ -60,3 +60,31 @@ def generate_slots_for_date(salon, target_date):
         current_start = current_end
 
     return slots
+
+def get_slot_availability(salon, target_date):
+    """
+    Returns slots with booking & capacity info.
+    """
+
+    slots = generate_slots_for_date(salon, target_date)
+    availability = []
+
+    for slot in slots:
+        booked = Appointment.objects.filter(
+            salon=salon,
+            appointment_date=target_date,
+            slot_start=slot["start"],
+            status="BOOKED",
+        ).count()
+
+        remaining = max(salon.max_capacity_per_slot - booked, 0)
+
+        availability.append({
+            "start": slot["start"],
+            "end": slot["end"],
+            "booked": booked,
+            "remaining": remaining,
+            "is_full": remaining == 0,
+        })
+
+    return availability
