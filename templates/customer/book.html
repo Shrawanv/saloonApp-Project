@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Appointment</title>
+    <style>
+        .full {
+            color: gray;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Book Appointment</h1>
+
+<p><strong>Salon:</strong> {{ salon.name }}</p>
+
+<label><strong>Date:</strong></label>
+<input type="date" id="datePicker" value="{{ date|date:'Y-m-d' }}">
+
+<hr>
+
+{% if errors %}
+    <ul class="error">
+        {% for error in errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+
+    <input type="hidden" name="salon_id" value="{{ salon.id }}">
+    <input type="hidden" name="appointment_date" id="appointmentDateHidden">
+
+    <h3>Select Slot</h3>
+
+    <div id="slotContainer">
+        Loading slots...
+    </div>
+
+    <br>
+    <button type="submit">Book Appointment</button>
+
+    
+</form>
+
+<script>
+const salonId = "{{ salon.id }}";
+const slotContainer = document.getElementById("slotContainer");
+const datePicker = document.getElementById("datePicker");
+const hiddenDateInput = document.getElementById("appointmentDateHidden");
+
+function loadSlots(date) {
+    slotContainer.innerHTML = "Loading slots...";
+
+    fetch(`/customer/slots/?salon_id={{ salon.id }}&date=${date}`)
+        .then(response => response.json())
+        .then(data => {
+            slotContainer.innerHTML = "";
+
+            if (!data.slots || data.slots.length === 0) {
+                slotContainer.innerHTML = "<p>No slots available</p>";
+                return;
+            }
+
+            data.slots.forEach(slot => {
+                if (slot.is_full) {
+                    slotContainer.innerHTML += `
+                        <div class="full">
+                            ${slot.start} - ${slot.end} (FULL)
+                        </div>
+                    `;
+                } else {
+                    slotContainer.innerHTML += `
+                        <div>
+                            <input type="radio" name="slot_start" value="${slot.start}">
+                            ${slot.start} - ${slot.end}
+                            (Remaining: ${slot.remaining})
+                        </div>
+                    `;
+                }
+            });
+        })
+        .catch(() => {
+            slotContainer.innerHTML = "<p class='error'>Failed to load slots</p>";
+        });
+}
+
+// initial load
+hiddenDateInput.value = datePicker.value;
+loadSlots(datePicker.value);
+
+// reload on change
+datePicker.addEventListener("change", function () {
+    hiddenDateInput.value = this.value;
+    loadSlots(this.value);
+});
+</script>
+
+
+</body>
+</html>
