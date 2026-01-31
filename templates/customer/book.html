@@ -9,6 +9,10 @@
         .error {
             color: red;
         }
+        .expected-total {
+            font-weight: bold;
+            margin-top: 0.5em;
+        }
     </style>
 </head>
 <body>
@@ -36,7 +40,27 @@
     <input type="hidden" name="salon_id" value="{{ salon.id }}">
     <input type="hidden" name="appointment_date" id="appointmentDateHidden">
 
+    <h3>Select Services</h3>
+    {% if services %}
+        <ul style="list-style: none; padding-left: 0;">
+            {% for service in services %}
+            <li>
+                <label>
+                    <input type="checkbox" name="service_ids" value="{{ service.id }}" class="service-cb" data-price="{{ service.price }}">
+                    {{ service.name }} &ndash; &#8377;{{ service.price }} ({{ service.duration }} min)
+                </label>
+            </li>
+            {% endfor %}
+        </ul>
+        <p class="expected-total">Expected total: &#8377;<span id="expectedTotal">0.00</span></p>
+    {% else %}
+        <p>No services available for this salon.</p>
+    {% endif %}
+
+    <hr>
+
     <h3>Select Slot</h3>
+    <p><em>Only available slots are shown (break times and past times excluded).</em></p>
 
     <div id="slotContainer">
         Loading slots...
@@ -53,6 +77,21 @@ const salonId = "{{ salon.id }}";
 const slotContainer = document.getElementById("slotContainer");
 const datePicker = document.getElementById("datePicker");
 const hiddenDateInput = document.getElementById("appointmentDateHidden");
+
+function updateExpectedTotal() {
+    const checkboxes = document.querySelectorAll(".service-cb:checked");
+    let total = 0;
+    checkboxes.forEach(function (cb) {
+        total += parseFloat(cb.getAttribute("data-price")) || 0;
+    });
+    const el = document.getElementById("expectedTotal");
+    if (el) el.textContent = total.toFixed(2);
+}
+
+document.querySelectorAll(".service-cb").forEach(function (cb) {
+    cb.addEventListener("change", updateExpectedTotal);
+});
+updateExpectedTotal();
 
 function loadSlots(date) {
     slotContainer.innerHTML = "Loading slots...";

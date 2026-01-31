@@ -2,18 +2,47 @@
 <html>
 <head>
     <title>Customer Dashboard</title>
+    <style>
+        .scanner-section { margin: 1.5em 0; padding: 1em; background: #f9f9f9; border-radius: 8px; }
+        .scanner-section h3 { margin-top: 0; }
+        #scannerContainer { display: none; margin: 1em 0; }
+        #scannerContainer.active { display: block; }
+        #scannerVideo { width: 100%; max-width: 320px; border: 1px solid #ccc; border-radius: 8px; background: #000; }
+        .scanner-actions { margin-top: 0.5em; }
+        .scanner-actions button { padding: 8px 16px; margin-right: 8px; cursor: pointer; }
+        .scan-result { margin-top: 1em; padding: 0.75em; background: #e8f5e9; border-radius: 6px; display: none; }
+        .scan-result.show { display: block; }
+        .scan-result a { font-weight: bold; }
+        .scan-error { background: #ffebee; }
+    </style>
 </head>
 <body>
 
     <h1>Customer Dashboard</h1>
 
-    <p>Welcome, {{ request.user.first_name }} {{ request.user.last_name }} ({{request.user.username}})</p>
+    <p>Welcome, {{ request.user.first_name }} {{ request.user.last_name }} ({{ request.user.username }})</p>
+
+    <hr>
+
+    <h3>Scan QR code to book</h3>
+    <p>Point your camera at a salon’s QR code to open its booking page.</p>
+    <div class="scanner-section">
+        <button type="button" id="startScannerBtn">Start QR scanner</button>
+        <div id="scannerContainer">
+            <video id="scannerVideo" playsinline muted></video>
+            <canvas id="scannerCanvas" style="display: none;"></canvas>
+            <div class="scanner-actions">
+                <button type="button" id="stopScannerBtn">Stop scanner</button>
+            </div>
+        </div>
+        <div id="scanResult" class="scan-result"></div>
+    </div>
 
     <hr>
 
     <h3>Available Actions</h3>
     <ul>
-        <li><a href="book/">Book Appointment</a></li>
+        <li><a href="{% url 'customer_book' %}">Book Appointment</a></li>
         <li>View My Appointments (later)</li>
         <li>Profile Settings (later)</li>
     </ul>
@@ -21,6 +50,86 @@
     <hr>
 
     <a href="/logout/">Logout</a>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+    <script>
+(function () {
+    const bookingUrlPrefix = "{{ booking_url_prefix|escapejs }}";
+    const startBtn = document.getElementById("startScannerBtn");
+    const stopBtn = document.getElementById("stopScannerBtn");
+    const container = document.getElementById("scannerContainer");
+    const video = document.getElementById("scannerVideo");
+    const canvas = document.getElementById("scannerCanvas");
+    const ctx = canvas.getContext("2d");
+    const resultEl = document.getElementById("scanResult");
+
+    let stream = null;
+    let scanning = false;
+
+    function showResult(url, isBooking) {
+        resultEl.className = "scan-result show" + (isBooking ? "" : " scan-error");
+        if (isBooking) {
+            resultEl.innerHTML = "Booking link found. <a href=\"" + url + "\">Open booking page</a>";
+            window.location.href = url;
+        } else {
+            resultEl.innerHTML = "Scanned: " + url;
+        }
+    }
+
+    function stopScanner() {
+        scanning = false;
+        if (stream) {
+            stream.getTracks().forEach(function (t) { t.stop(); });
+            stream = null;
+        }
+        video.srcObject = null;
+        container.classList.remove("active");
+        startBtn.style.display = "";
+    }
+
+    function tick() {
+        if (!scanning || !video.videoWidth) {
+            requestAnimationFrame(tick);
+            return;
+        }
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        if (code && code.data) {
+            const url = code.data.trim();
+            const isBooking = url.indexOf(bookingUrlPrefix) === 0;
+            stopScanner();
+            showResult(url, isBooking);
+            return;
+        }
+        requestAnimationFrame(tick);
+    }
+
+    startBtn.addEventListener("click", function () {
+        resultEl.classList.remove("show");
+        resultEl.innerHTML = "";
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then(function (s) {
+                stream = s;
+                video.srcObject = stream;
+                video.setAttribute("playsinline", true);
+                video.play();
+                container.classList.add("active");
+                startBtn.style.display = "none";
+                scanning = true;
+                tick();
+            })
+            .catch(function (err) {
+                resultEl.className = "scan-result show scan-error";
+                resultEl.innerHTML = "Camera access denied or not available. " + (err.message || "");
+            });
+    });
+
+    stopBtn.addEventListener("click", stopScanner);
+})();
+    </script>
 
 </body>
 </html>

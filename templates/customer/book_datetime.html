@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Appointment – Date &amp; Time</title>
+    <style>
+        .full { color: gray; }
+        .error { color: red; }
+        .summary { margin: 0.5em 0; padding: 0.5em; background: #f5f5f5; }
+    </style>
+</head>
+<body>
+
+<h1>Book Appointment</h1>
+<p><strong>Step 2:</strong> Select date and time</p>
+
+<p><strong>Salon:</strong> {{ salon.name }}</p>
+
+<div class="summary">
+    <strong>Your selection:</strong> {{ total_duration }} min total &ndash; &#8377;{{ total_amount }}
+    <br>
+    <em>Each slot is {{ total_duration }} min (based on selected services).</em>
+</div>
+
+<p><a href="{% url 'customer_book' %}">Change services</a></p>
+
+{% if errors %}
+    <ul class="error">
+        {% for error in errors %}
+            <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+
+    <input type="hidden" name="appointment_date" id="appointmentDateHidden">
+
+    <h3>Date</h3>
+    <input type="date" id="datePicker" value="{{ date|date:'Y-m-d' }}">
+
+    <h3>Select Slot</h3>
+    <p><em>Only available {{ total_duration }}-minute slots are shown (break and past times excluded).</em></p>
+
+    <div id="slotContainer">
+        Loading slots...
+    </div>
+
+    <br>
+    <button type="submit">Book Appointment</button>
+</form>
+
+<p><a href="{% url 'customer-dashboard' %}">Cancel</a></p>
+
+<script>
+const salonId = "{{ salon.id }}";
+const durationMinutes = {{ total_duration }};
+const slotContainer = document.getElementById("slotContainer");
+const datePicker = document.getElementById("datePicker");
+const hiddenDateInput = document.getElementById("appointmentDateHidden");
+
+function loadSlots(date) {
+    slotContainer.innerHTML = "Loading slots...";
+    const url = "/customer/slots/?salon_id=" + salonId + "&date=" + date + "&duration_minutes=" + durationMinutes;
+    fetch(url)
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+            slotContainer.innerHTML = "";
+            if (!data.slots || data.slots.length === 0) {
+                slotContainer.innerHTML = "<p>No slots available for this date.</p>";
+                return;
+            }
+            data.slots.forEach(function (slot) {
+                if (slot.is_full) {
+                    slotContainer.innerHTML += "<div class='full'>" + slot.start + " - " + slot.end + " (FULL)</div>";
+                } else {
+                    slotContainer.innerHTML += "<div><label><input type='radio' name='slot_start' value='" + slot.start + "'> " + slot.start + " - " + slot.end + " (Remaining: " + slot.remaining + ")</label></div>";
+                }
+            });
+        })
+        .catch(function () {
+            slotContainer.innerHTML = "<p class='error'>Failed to load slots.</p>";
+        });
+}
+
+hiddenDateInput.value = datePicker.value;
+loadSlots(datePicker.value);
+
+datePicker.addEventListener("change", function () {
+    hiddenDateInput.value = this.value;
+    loadSlots(this.value);
+});
+</script>
+
+</body>
+</html>

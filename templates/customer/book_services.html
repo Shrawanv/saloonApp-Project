@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Appointment – Select Salon &amp; Services</title>
+    <style>
+        .error { color: red; }
+        .expected-total { font-weight: bold; margin-top: 0.5em; }
+        .duration { margin-top: 0.25em; }
+        .salon-dropdown { position: relative; max-width: 320px; }
+        .salon-dropdown input { width: 100%; padding: 8px; box-sizing: border-box; }
+        .salon-dropdown .salon-list { border: 1px solid #ccc; max-height: 200px; overflow-y: auto; list-style: none; margin: 0; padding: 0; background: #fff; display: none; }
+        .salon-dropdown .salon-list.show { display: block; }
+        .salon-dropdown .salon-list li { padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #eee; }
+        .salon-dropdown .salon-list li:hover { background: #f5f5f5; }
+        .salon-dropdown .salon-list li.no-match { cursor: default; color: #999; }
+        .salon-selected { margin: 8px 0; font-weight: bold; color: #333; }
+    </style>
+</head>
+<body>
+
+<h1>Book Appointment</h1>
+<p><strong>Step 1:</strong> Select salon and services</p>
+
+{% if messages %}
+    <ul>
+        {% for message in messages %}
+            <li class="{% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<div class="salon-dropdown">
+    <label for="salonSearch"><strong>Select salon (type to search):</strong></label>
+    <input type="text" id="salonSearch" placeholder="Search by salon name..." autocomplete="off" value="{{ salon.name|default:'' }}">
+    <ul class="salon-list" id="salonList" aria-label="Salon list">
+        {% for s in salons %}
+        <li data-id="{{ s.id }}" data-name="{{ s.name }}">{{ s.name }}</li>
+        {% empty %}
+        <li class="no-match">No salons available</li>
+        {% endfor %}
+    </ul>
+</div>
+{% if salon %}
+    <p class="salon-selected">Selected: {{ salon.name }}</p>
+{% endif %}
+
+<form method="post" id="bookForm">
+    {% csrf_token %}
+    <input type="hidden" name="salon_id" value="{{ salon.id|default:'' }}">
+
+    <h3>Select Services</h3>
+    {% if salon and services %}
+        <ul style="list-style: none; padding-left: 0;">
+            {% for service in services %}
+            <li>
+                <label>
+                    <input type="checkbox" name="service_ids" value="{{ service.id }}" class="service-cb" data-price="{{ service.price }}" data-duration="{{ service.duration }}">
+                    {{ service.name }} &ndash; &#8377;{{ service.price }} ({{ service.duration }} min)
+                </label>
+            </li>
+            {% endfor %}
+        </ul>
+        <p class="expected-total">Expected total: &#8377;<span id="expectedTotal">0.00</span></p>
+        <p class="duration">Total duration: <span id="totalDuration">0</span> min (slots on next step will be this length)</p>
+        <button type="submit">Continue to date &amp; time</button>
+    {% elif salon %}
+        <p>No services available for this salon.</p>
+    {% else %}
+        <p>Select a salon above to see services.</p>
+    {% endif %}
+</form>
+
+<p><a href="{% url 'customer-dashboard' %}">Back to dashboard</a></p>
+
+<script>
+(function () {
+    const salonSearch = document.getElementById("salonSearch");
+    const salonList = document.getElementById("salonList");
+    const listItems = salonList ? salonList.querySelectorAll("li[data-id]") : [];
+
+    function filterSalons() {
+        const q = (salonSearch.value || "").trim().toLowerCase();
+        let hasMatch = false;
+        listItems.forEach(function (li) {
+            const name = (li.getAttribute("data-name") || "").toLowerCase();
+            const show = !q || name.indexOf(q) !== -1;
+            li.style.display = show ? "" : "none";
+            if (show) hasMatch = true;
+        });
+        salonList.classList.add("show");
+    }
+
+    function goToSalon(salonId) {
+        const url = "{% url 'customer_book' %}?salon_id=" + encodeURIComponent(salonId);
+        window.location.href = url;
+    }
+
+    if (salonSearch) {
+        salonSearch.addEventListener("focus", function () { salonList.classList.add("show"); filterSalons(); });
+        salonSearch.addEventListener("input", filterSalons);
+        salonSearch.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") salonList.classList.remove("show");
+        });
+    }
+
+    listItems.forEach(function (li) {
+        li.addEventListener("click", function () {
+            const id = li.getAttribute("data-id");
+            if (id) goToSalon(id);
+        });
+    });
+
+    document.addEventListener("click", function (e) {
+        if (salonList && salonSearch && !salonList.contains(e.target) && !salonSearch.contains(e.target)) {
+            salonList.classList.remove("show");
+        }
+    });
+})();
+
+function updateTotals() {
+    const checkboxes = document.querySelectorAll(".service-cb:checked");
+    let total = 0, duration = 0;
+    checkboxes.forEach(function (cb) {
+        total += parseFloat(cb.getAttribute("data-price")) || 0;
+        duration += parseInt(cb.getAttribute("data-duration"), 10) || 0;
+    });
+    const totalEl = document.getElementById("expectedTotal");
+    const durationEl = document.getElementById("totalDuration");
+    if (totalEl) totalEl.textContent = total.toFixed(2);
+    if (durationEl) durationEl.textContent = duration;
+}
+document.querySelectorAll(".service-cb").forEach(function (cb) {
+    cb.addEventListener("change", updateTotals);
+});
+updateTotals();
+</script>
+
+</body>
+</html>

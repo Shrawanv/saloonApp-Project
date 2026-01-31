@@ -108,13 +108,17 @@ def vendor_service_toggle(request, service_id):
 @login_required
 @customer_required
 def customer_dashboard(request):
-    return render(request, "customer/dashboard.html")
+    booking_url_prefix = request.build_absolute_uri("/customer/book/")
+    return render(request, "customer/dashboard.html", {
+        "booking_url_prefix": booking_url_prefix,
+    })
 
 @login_required
 @customer_required
 def customer_slots_api(request):
     salon_id = request.GET.get("salon_id")
     date_str = request.GET.get("date")
+    duration_str = request.GET.get("duration_minutes")
 
     if not salon_id or not date_str:
         return JsonResponse({"error": "Missing parameters"}, status=400)
@@ -124,9 +128,18 @@ def customer_slots_api(request):
     except ValueError:
         return JsonResponse({"error": "Invalid date"}, status=400)
 
+    duration_minutes = None
+    if duration_str is not None and duration_str != "":
+        try:
+            duration_minutes = int(duration_str)
+            if duration_minutes <= 0:
+                return JsonResponse({"error": "duration_minutes must be positive"}, status=400)
+        except ValueError:
+            return JsonResponse({"error": "Invalid duration_minutes"}, status=400)
+
     salon = get_object_or_404(Salon, id=salon_id, is_active=True)
 
-    slots = get_slot_availability(salon, target_date)
+    slots = get_slot_availability(salon, target_date, duration_minutes=duration_minutes)
 
     data = [
         {

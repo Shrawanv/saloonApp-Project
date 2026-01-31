@@ -40,6 +40,11 @@ class Appointment(models.Model):
         default=0
     )
 
+    duration_minutes = models.PositiveIntegerField(
+        default=0,
+        help_text="Total duration of selected services; used for slot availability.",
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def calculate_total_amount(self):
