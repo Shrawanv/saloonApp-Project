@@ -139,7 +139,10 @@ DEFAULT_USER_PASSWORD = os.getenv(
 )
 
 LOGIN_URL = "/login/"
-LOGOUT_REDIRECT_URL = "/login/"
+LOGOUT_REDIRECT_URL = "/"
 LOGIN_REDIRECT_URL = "/"
 
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.ngrok-free.dev",
+]
