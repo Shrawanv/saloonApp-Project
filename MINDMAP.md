@@ -20,8 +20,8 @@ Salon App
 │
 ├── User / Customer Module
 │   ├── My Profile
-│   ├── Book an Appointment
-│   ├── Salon Dashboard (welcome)
+│   ├── Book an Appointment ✅ (two-step: salon + services → date + duration-based slot; searchable salon; ?salon_id= pre-select)
+│   ├── Salon Dashboard (welcome) ✅ + QR scanner (camera) to scan salon QR → booking page
 │   └── My Appointments
 │   ├── Welcome: "Welcome Mr/Ms {Name}"
 │   ├── Last visited: "Last time you visited XX Salon on DATE"
@@ -73,9 +73,9 @@ Salon App
 |------------|-----------------------------------|--------------------------------------|
 | **accounts** | Auth + roles (Admin/Customer/Vendor) | `User` (role, mobile, pincode)       |
 | **salons**   | Salon & vendor core               | `Salon` (owner, hours, break, slot_duration, max_capacity) |
-| **services** | Services, pricing, slots          | `Service` (salon, name, price, duration); `slot_utils`    |
-| **bookings** | Appointments + queue (future)     | `Appointment` (user, salon, date, slot_start, services M2M, status, total_amount) |
-| **dashboards** | Customer & vendor UI + routing  | `vendor_required`, `customer_required`; vendor/customer views & URLs |
+| **services** | Services, pricing, slots          | `Service` (salon, name, price, duration); `slot_utils` (variable-duration slots, overlap-based availability) |
+| **bookings** | Appointments (duration-based slots) | `Appointment` (user, salon, date, slot_start, services M2M, status, total_amount, **duration_minutes**); two-step book flow (services → date/time) |
+| **dashboards** | Customer & vendor UI + routing  | `vendor_required`, `customer_required`; customer dashboard with **QR scanner**; vendor/customer views & URLs |
 
 **Not yet in codebase (from plan):** `payments`, `tickets`, `reports`, `notifications`, `gallery`.
 
@@ -86,8 +86,9 @@ Salon App
 - **User** (accounts): username, role (ADMIN/CUSTOMER/VENDOR), mobile, pincode, first_name, last_name, etc.
 - **Salon**: name, owner (FK User), mobile, pincode, opening_time, closing_time, break_start/end, slot_duration, max_capacity_per_slot, is_active.
 - **Service**: salon (FK), name, price, duration (min), is_active.
-- **Appointment**: user, salon, services (M2M), appointment_date, slot_start, status (BOOKED/CANCELLED/COMPLETED), total_amount, created_at.  
-  - `total_amount` kept in sync via signal on `services` M2M.
+- **Appointment**: user, salon, services (M2M), appointment_date, slot_start, status (BOOKED/CANCELLED/COMPLETED), total_amount, **duration_minutes**, created_at.  
+  - `total_amount` and `duration_minutes` kept in sync via signal on `services` M2M.  
+  - Slot availability uses `duration_minutes` for overlap checks (one booking = one block of that duration).
 
 ---
 
@@ -98,10 +99,10 @@ Salon App
 | `/admin/`     | Django admin   | Superuser only                              |
 | `/login/`, `/logout/` | accounts | Role-based redirect: Vendor → `/vendor/`, Customer → `/customer/` |
 | `/vendor/`    | dashboards     | Vendor dashboard, services CRUD + toggle   |
-| `/customer/`  | dashboards     | Customer dashboard, book appointment, slots API |
+| `/customer/`  | dashboards     | Customer dashboard, **QR scanner**, two-step booking, slots API |
 
 **Vendor:** `vendor_dashboard`, `vendor_services`, `vendor_service_create/update/delete/toggle`.  
-**Customer:** `customer_dashboard`, `customer_book_appointment`, `customer_slots_api` (JSON).
+**Customer:** `customer_dashboard` (QR scanner), `customer_book_services` (step 1: salon + services; `?salon_id=` pre-select), `customer_book_datetime` (step 2: date + slot), `customer_slots_api` (JSON; optional `duration_minutes` for variable-duration slots).
 
 ---
 
@@ -112,15 +113,15 @@ Salon App
 - **Gap:** Custom “Admin Module” UI (dashboard, salons list, new salon, user list, new user, salon/user tickets) as per plan not built.
 
 ### Customer Module
-- **Done:** Login, customer dashboard (welcome + link to book), Book Appointment (single salon for now, date + slot, slot API), redirect after book.
-- **Gap:** My Profile, salon dropdown on book, last-visited salon, services selection + expected bill, My Appointments list, cancel/reschedule, feedback (stars), live queue.
+- **Done:** Login; customer dashboard (welcome, **QR scanner** to scan salon QR → booking page); **two-step Book Appointment**: (1) **searchable salon dropdown** + service selection + expected total/duration, pre-select via `?salon_id=` (e.g. from QR); (2) date + **duration-based slots** (slot length = total service duration), then book; slots API with `duration_minutes`; past slots excluded for today; break times excluded from slots.
+- **Gap:** My Profile, last-visited salon, My Appointments list, cancel/reschedule, feedback (stars), live queue.
 
 ### Vendor Module
 - **Done:** Vendor dashboard (sidebar with placeholders), Services (Add/Edit/Delete/Toggle, filter by salon).
 - **Gap:** Home charts, Booking & Queue (live queue, reminders, walk-in), Payment & Billing, Communication, Reports, Gallery, Premium, Settings & Support, My Profile (slot availability, limit bookings, staff, discounts, etc.).
 
 ### Cross-cutting
-- **Done:** Slot generation with break support, slot availability (capacity), `book_appointment` service (no services M2M in flow yet).
+- **Done:** Slot generation with **variable duration** and break support; **overlap-based** slot availability (one appointment blocks full duration); past slots excluded when date is today; `book_appointment` with services M2M and `duration_minutes`; session-based two-step flow.
 - **Gap:** Payments, tickets, reports, notifications, gallery, media uploads, plans/pricing (DoJ, Plan, Plan Start/Expiry, Price).
 
 ---
@@ -132,10 +133,10 @@ Salon App
 | Auth           | `accounts/views.py`, `accounts/urls.py`, `accounts/models.py` |
 | Roles          | `dashboards/decorators.py` (`vendor_required`, `customer_required`) |
 | Salons         | `salons/models.py` |
-| Services       | `services/models.py`, `services/slot_utils.py` |
-| Bookings       | `bookings/models.py`, `bookings/views.py`, `bookings/services.py`, `bookings/signals.py` |
+| Services       | `services/models.py`, `services/slot_utils.py` (variable duration, overlap-based availability) |
+| Bookings       | `bookings/models.py`, `bookings/views.py` (two-step: `customer_book_services`, `customer_book_datetime`), `bookings/services.py`, `bookings/signals.py` |
 | Dashboards     | `dashboards/views.py`, `dashboards/vendor_urls.py`, `dashboards/customer_urls.py` |
-| Templates      | `templates/accounts/login.html`, `templates/customer/dashboard.html`, `templates/customer/book.html`, `templates/vendor/dashboard.html`, `templates/vendor/services.html` |
+| Templates      | `templates/accounts/login.html`, `templates/customer/dashboard.html` (QR scanner), `templates/customer/book_services.html`, `templates/customer/book_datetime.html`, `templates/vendor/dashboard.html`, `templates/vendor/services.html` |
 | Config         | `saloonApp/settings.py`, `saloonApp/urls.py` |
 
 ---

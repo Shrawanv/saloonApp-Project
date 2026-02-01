@@ -37,7 +37,7 @@
     <input type="hidden" name="appointment_date" id="appointmentDateHidden">
 
     <h3>Date</h3>
-    <input type="date" id="datePicker" value="{{ date|date:'Y-m-d' }}">
+    <input type="date" id="datePicker" value="{{ date|date:'Y-m-d' }}" min="{{ min_booking_date|date:'Y-m-d' }}" title="Past dates are not available">
 
     <h3>Select Slot</h3>
     <p><em>Only available {{ total_duration }}-minute slots are shown (break and past times excluded).</em></p>

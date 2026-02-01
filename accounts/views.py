@@ -1,6 +1,12 @@
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 
+
+def home_view(request):
+    """Root home page with links to Admin and Login."""
+    return render(request, "home.html")
+
+
 def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username")
