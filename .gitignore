@@ -9,12 +9,16 @@ venv/
 env/
 ENV/
 
+#Files
+MINDMAP.md
+.cursorrules
+
 # Django
 *.log
 db.sqlite3
 media/
 staticfiles/
-.cursorrules
+
 
 # IDE
 .vscode/

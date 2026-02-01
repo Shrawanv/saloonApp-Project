@@ -127,6 +127,8 @@ def customer_book_datetime(request):
                 appointment_date = datetime.strptime(
                     appointment_date_str, "%Y-%m-%d"
                 ).date()
+                if appointment_date < date.today():
+                    errors.append("Cannot book in the past. Please select today or a future date.")
             except ValueError:
                 errors.append("Invalid date format")
 
@@ -161,6 +163,7 @@ def customer_book_datetime(request):
         "total_duration": total_duration,
         "total_amount": total_amount,
         "date": appointment_date,
+        "min_booking_date": date.today(),
         "slots": slots,
         "errors": errors,
     })
