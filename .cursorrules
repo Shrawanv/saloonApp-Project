@@ -1,12 +1,13 @@
-# ================================
-# PROJECT RULES — DJANGO API FIRST
-# ================================
+# =========================================
+# PROJECT RULES — DJANGO API FIRST (PERF)
+# =========================================
 
 GENERAL PRINCIPLES
 - This project is API-first.
+- PERFORMANCE is a top priority at all times.
 - Django must NEVER render frontend templates except for /admin/.
 - All client apps (React web/mobile, mobile app, desktop app) must consume APIs only.
-- APIs must be reusable, frontend-agnostic, and production-ready.
+- APIs must be reusable, frontend-agnostic, secure, and production-ready.
 
 --------------------------------
 ROUTING RULES
@@ -50,6 +51,35 @@ API DESIGN RULES
 - Trailing slashes are REQUIRED on all API endpoints.
 
 --------------------------------
+PERFORMANCE (NON-NEGOTIABLE)
+--------------------------------
+- Performance must be considered for EVERY API change.
+- Avoid N+1 queries at all costs.
+- Use:
+  - select_related() for FK relationships
+  - prefetched_related() for M2M / reverse relations
+- Querysets must be optimized BEFORE serialization.
+- Never perform DB queries inside serializers if avoidable.
+- Pagination is REQUIRED for list endpoints returning collections.
+- Do NOT return unused fields in serializers.
+- Use queryset filtering instead of Python-level filtering.
+- Avoid expensive operations inside loops.
+- Caching must be considered for:
+  - list endpoints
+  - read-heavy endpoints
+- Any performance regression is considered a bug.
+
+--------------------------------
+DATABASE & ORM RULES
+--------------------------------
+- No raw queries unless absolutely required.
+- Index fields that are:
+  - frequently filtered
+  - frequently joined
+- Avoid `.all()` on large tables without pagination.
+- Always assume production-scale data.
+
+--------------------------------
 CSRF RULE (IMPORTANT)
 --------------------------------
 - Any CSRF endpoint MUST use @ensure_csrf_cookie.
@@ -78,6 +108,7 @@ The inventory must include:
 - Permission classes
 - Role scope (any / auth-any / customer / vendor)
 - Short description
+- Performance notes (if applicable)
 - Special notes (cookies, CSRF, ownership rules)
 
 The inventory must reflect ONLY actual registered URLs.
@@ -93,6 +124,7 @@ WHAT NOT TO DO
 - Do NOT store JWTs in localStorage or sessionStorage.
 - Do NOT add APIs outside /api/.
 - Do NOT guess endpoints — inspect urls.py.
+- Do NOT sacrifice performance for quick fixes.
 
 --------------------------------
 EXPECTED END STATE
@@ -101,3 +133,4 @@ EXPECTED END STATE
 - "/api/..." → APIs
 - "/admin/" → Django admin only
 - No other HTML endpoints accessible
+- APIs remain fast under production-scale data
