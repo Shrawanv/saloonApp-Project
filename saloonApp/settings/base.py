@@ -1,15 +1,16 @@
 """
-Shared Django settings. Imports auth, cors, and security modules.
+Shared Django settings. Imports auth, cors, security, and DRF modules.
 Production-ready defaults; dev.py and prod.py override as needed.
 """
 from pathlib import Path
 
 from . import auth
 from . import cors
+from . import drf
 from . import security
 
 # Apply imported config into this module's namespace
-for _mod in (security, auth, cors):
+for _mod in (security, auth, cors, drf):
     for _key in dir(_mod):
         if _key.isupper():
             globals()[_key] = getattr(_mod, _key)

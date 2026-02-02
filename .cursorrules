@@ -1,4 +1,13 @@
 # =========================================
+# ⛔ MANDATORY AGENT RULE
+# =========================================
+You MUST read and follow this entire .cursorrules file
+BEFORE making any code or documentation changes.
+
+If these rules are not followed, the task is INCOMPLETE.
+
+
+# =========================================
 # PROJECT RULES — DJANGO API FIRST (PERF)
 # =========================================
 
@@ -6,8 +15,9 @@ GENERAL PRINCIPLES
 - This project is API-first.
 - PERFORMANCE is a top priority at all times.
 - Django must NEVER render frontend templates except for /admin/.
-- All client apps (React web/mobile, mobile app, desktop app) must consume APIs only.
+- All client apps (web, mobile, desktop) must consume APIs only.
 - APIs must be reusable, frontend-agnostic, secure, and production-ready.
+
 
 --------------------------------
 ROUTING RULES
@@ -16,6 +26,9 @@ ROUTING RULES
 - All APIs must live strictly under "/api/".
 - Only "/admin/" is allowed to use Django templates.
 - Old frontend routes (/login/, /vendor/, /customer/, etc.) must NOT be reintroduced.
+- No redirects from API endpoints.
+- Trailing slashes are REQUIRED on all API endpoints.
+
 
 --------------------------------
 AUTHENTICATION & SECURITY
@@ -24,9 +37,11 @@ AUTHENTICATION & SECURITY
 - JWTs must be stored ONLY in HttpOnly cookies.
 - NEVER return access or refresh tokens in JSON responses.
 - Do NOT use Authorization headers for JWTs.
+- Cookie-only authentication is mandatory.
 - CSRF protection MUST remain enabled.
 - CSRF token must be provided via cookie + X-CSRFToken header.
 - NEVER use @csrf_exempt as a shortcut.
+
 
 --------------------------------
 PERMISSIONS
@@ -40,81 +55,95 @@ PERMISSIONS
 - 403 = authenticated but not allowed
 - Do NOT loosen permissions for convenience.
 
+
 --------------------------------
 API DESIGN RULES
 --------------------------------
 - JSON-only responses.
-- No redirects.
 - No HTML responses.
+- No template rendering.
 - Use DRF serializers for all validation.
 - Use proper HTTP status codes.
-- Trailing slashes are REQUIRED on all API endpoints.
+- Explicit methods only (GET, POST, PATCH, DELETE).
+- Idempotent operations where applicable.
+
 
 --------------------------------
 PERFORMANCE (NON-NEGOTIABLE)
 --------------------------------
 - Performance must be considered for EVERY API change.
+- Always assume production-scale data.
 - Avoid N+1 queries at all costs.
 - Use:
   - select_related() for FK relationships
-  - prefetched_related() for M2M / reverse relations
+  - prefetch_related() for M2M / reverse relations
 - Querysets must be optimized BEFORE serialization.
 - Never perform DB queries inside serializers if avoidable.
-- Pagination is REQUIRED for list endpoints returning collections.
+- Pagination is REQUIRED for list endpoints.
 - Do NOT return unused fields in serializers.
 - Use queryset filtering instead of Python-level filtering.
 - Avoid expensive operations inside loops.
-- Caching must be considered for:
+- Consider caching for:
   - list endpoints
   - read-heavy endpoints
-- Any performance regression is considered a bug.
+- Any performance regression is considered a BUG.
+
 
 --------------------------------
 DATABASE & ORM RULES
 --------------------------------
-- No raw queries unless absolutely required.
+- No raw SQL unless absolutely required.
 - Index fields that are:
   - frequently filtered
   - frequently joined
 - Avoid `.all()` on large tables without pagination.
-- Always assume production-scale data.
+- Always assume high data volume.
+
 
 --------------------------------
 CSRF RULE (IMPORTANT)
 --------------------------------
-- Any CSRF endpoint MUST use @ensure_csrf_cookie.
+- CSRF endpoints MUST use @ensure_csrf_cookie.
 - CSRF token must NOT be returned in JSON.
 - CSRF cookie must be visible in Postman.
 - Browser-only CSRF behavior must NOT be relied upon.
 
+
 --------------------------------
-API INVENTORY (MANDATORY)
+API INVENTORY (STRICT)
 --------------------------------
-RULE: API INVENTORY MUST ALWAYS BE UPDATED
+FILE: docs/api_endpoints.md is the SINGLE source of truth.
 
-- Maintain a single source of truth file:
-  docs/api_endpoints.md
+RULES:
+- EVERY API change MUST update this file.
+- Includes: create, modify, delete, rename, permission changes.
+- Update must happen in the SAME task.
 
-- Whenever an API endpoint is:
-  - created
-  - modified
-  - removed
-  the file MUST be updated.
-
-The inventory must include:
+Each endpoint entry MUST include:
 - HTTP method(s)
 - Full path (with trailing slash)
-- View name
+- View / ViewSet name
 - Permission classes
 - Role scope (any / auth-any / customer / vendor)
 - Short description
-- Performance notes (if applicable)
-- Special notes (cookies, CSRF, ownership rules)
+- Special notes (CSRF, cookies, ownership rules)
 
 The inventory must reflect ONLY actual registered URLs.
-No future plans, no assumptions.
+No future plans. No assumptions.
 
-Failure to update docs/api_endpoints.md means the task is incomplete.
+If code changes but docs/api_endpoints.md is not updated,
+the task is FAILED.
+
+
+--------------------------------
+AGENT ENFORCEMENT RULES
+--------------------------------
+- Always assume .cursorrules is authoritative.
+- Do NOT ask whether rules apply — they always apply.
+- Do NOT skip documentation to save tokens.
+- Inspect urls.py and views instead of guessing endpoints.
+- If unsure, verify behavior before responding.
+
 
 --------------------------------
 WHAT NOT TO DO
@@ -126,11 +155,22 @@ WHAT NOT TO DO
 - Do NOT guess endpoints — inspect urls.py.
 - Do NOT sacrifice performance for quick fixes.
 
+
 --------------------------------
 EXPECTED END STATE
 --------------------------------
-- "/" → JSON
-- "/api/..." → APIs
+- "/" → JSON only
+- "/api/..." → APIs only
 - "/admin/" → Django admin only
 - No other HTML endpoints accessible
 - APIs remain fast under production-scale data
+
+
+--------------------------------
+TASK COMPLETION CHECK
+--------------------------------
+Before marking a task complete, verify:
+- APIs work as intended
+- Permissions & roles are correct
+- Performance rules are respected
+- docs/api_endpoints.md is updated
