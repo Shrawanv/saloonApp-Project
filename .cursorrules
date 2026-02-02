@@ -1,8 +1,7 @@
 # =========================================
 # ⛔ MANDATORY AGENT RULE
 # =========================================
-You MUST read and follow this entire .cursorrules file
-BEFORE making any code or documentation changes.
+RULE: The agent MUST read .cursorrules before writing or modifying any code or docs.
 
 If these rules are not followed, the task is INCOMPLETE.
 

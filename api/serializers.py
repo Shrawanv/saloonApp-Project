@@ -71,6 +71,7 @@ class LoginSerializer(serializers.Serializer):
 
 
 class BookAppointmentSerializer(serializers.Serializer):
+    """POST /api/bookings/. Multi-service: service_ids required (non-empty list)."""
     salon_id = serializers.IntegerField(required=True)
     service_ids = serializers.ListField(
         child=serializers.IntegerField(),
@@ -79,3 +80,19 @@ class BookAppointmentSerializer(serializers.Serializer):
     )
     appointment_date = serializers.DateField(required=True)
     slot_start = serializers.TimeField(required=True)
+
+    def validate(self, attrs):
+        salon_id = attrs["salon_id"]
+        service_ids = attrs["service_ids"]
+        valid_ids = set(
+            Service.objects.filter(
+                id__in=service_ids,
+                salon_id=salon_id,
+                is_active=True,
+            ).values_list("id", flat=True)
+        )
+        if valid_ids != set(service_ids) or len(valid_ids) != len(service_ids):
+            raise serializers.ValidationError(
+                {"service_ids": "All services must exist and belong to the given salon."}
+            )
+        return attrs

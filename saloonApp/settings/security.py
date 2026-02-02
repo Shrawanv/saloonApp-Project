@@ -8,9 +8,16 @@ SECRET_KEY = config(
     default="django-insecure-dev-key-change-in-production",
 )
 
-# Comma-separated origins for CSRF trust (e.g. https://app.example.com)
+# Origins trusted for CSRF (required when API is used from another origin, e.g. tunnel/mobile).
+# Env: comma-separated list (e.g. CSRF_TRUSTED_ORIGINS="https://foo.trycloudflare.com,http://localhost:8000").
+# Default includes local dev + Cloudflare and ngrok tunnel wildcards.
 CSRF_TRUSTED_ORIGINS = config(
     "CSRF_TRUSTED_ORIGINS",
-    default="https://*.ngrok-free.dev",
-    cast=lambda v: [s.strip() for s in v.split(",") if s.strip()],
+    default=(
+        "http://localhost:8000,"
+        "http://127.0.0.1:8000,"
+        "https://*.trycloudflare.com,"
+        "https://*.ngrok-free.dev"
+    ),
+    cast=lambda v: [s.strip() for s in str(v).split(",") if s.strip()],
 )
