@@ -3,7 +3,7 @@ API routes. All require authentication except: login, refresh, logout, csrf.
 JWT in HttpOnly cookies only; no tokens in JSON.
 """
 from django.urls import path, include
-from api.views.auth import LoginView, RefreshView, LogoutView, CSRFView, MeView
+from api.views.auth import LoginView, RefreshView, LogoutView, csrf_view, MeView
 from api.views.salons import SalonListAPIView
 from api.views.services import ServiceListBySalonAPIView, VendorServiceListCreateAPIView, VendorServiceDetailAPIView
 from api.views.slots import SlotsAPIView
@@ -14,7 +14,7 @@ urlpatterns = [
     path("auth/login/", LoginView.as_view(), name="api-login"),
     path("auth/refresh/", RefreshView.as_view(), name="api-refresh"),
     path("auth/logout/", LogoutView.as_view(), name="api-logout"),
-    path("auth/csrf/", CSRFView.as_view(), name="api-csrf"),
+    path("auth/csrf/", csrf_view, name="api-csrf"),
 
     # Authenticated
     path("auth/me/", MeView.as_view(), name="api-me"),

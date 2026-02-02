@@ -1,0 +1,103 @@
+# ================================
+# PROJECT RULES — DJANGO API FIRST
+# ================================
+
+GENERAL PRINCIPLES
+- This project is API-first.
+- Django must NEVER render frontend templates except for /admin/.
+- All client apps (React web/mobile, mobile app, desktop app) must consume APIs only.
+- APIs must be reusable, frontend-agnostic, and production-ready.
+
+--------------------------------
+ROUTING RULES
+--------------------------------
+- Root URL ("/") must return JSON only (health / API info).
+- All APIs must live strictly under "/api/".
+- Only "/admin/" is allowed to use Django templates.
+- Old frontend routes (/login/, /vendor/, /customer/, etc.) must NOT be reintroduced.
+
+--------------------------------
+AUTHENTICATION & SECURITY
+--------------------------------
+- Authentication = JWT (django-rest-framework-simplejwt).
+- JWTs must be stored ONLY in HttpOnly cookies.
+- NEVER return access or refresh tokens in JSON responses.
+- Do NOT use Authorization headers for JWTs.
+- CSRF protection MUST remain enabled.
+- CSRF token must be provided via cookie + X-CSRFToken header.
+- NEVER use @csrf_exempt as a shortcut.
+
+--------------------------------
+PERMISSIONS
+--------------------------------
+- All APIs require authentication by default.
+- Explicitly public endpoints must be marked with AllowAny.
+- Role-based access must be enforced using permission classes:
+  - IsCustomer
+  - IsVendor
+- 401 = not authenticated
+- 403 = authenticated but not allowed
+- Do NOT loosen permissions for convenience.
+
+--------------------------------
+API DESIGN RULES
+--------------------------------
+- JSON-only responses.
+- No redirects.
+- No HTML responses.
+- Use DRF serializers for all validation.
+- Use proper HTTP status codes.
+- Trailing slashes are REQUIRED on all API endpoints.
+
+--------------------------------
+CSRF RULE (IMPORTANT)
+--------------------------------
+- Any CSRF endpoint MUST use @ensure_csrf_cookie.
+- CSRF token must NOT be returned in JSON.
+- CSRF cookie must be visible in Postman.
+- Browser-only CSRF behavior must NOT be relied upon.
+
+--------------------------------
+API INVENTORY (MANDATORY)
+--------------------------------
+RULE: API INVENTORY MUST ALWAYS BE UPDATED
+
+- Maintain a single source of truth file:
+  docs/api_endpoints.md
+
+- Whenever an API endpoint is:
+  - created
+  - modified
+  - removed
+  the file MUST be updated.
+
+The inventory must include:
+- HTTP method(s)
+- Full path (with trailing slash)
+- View name
+- Permission classes
+- Role scope (any / auth-any / customer / vendor)
+- Short description
+- Special notes (cookies, CSRF, ownership rules)
+
+The inventory must reflect ONLY actual registered URLs.
+No future plans, no assumptions.
+
+Failure to update docs/api_endpoints.md means the task is incomplete.
+
+--------------------------------
+WHAT NOT TO DO
+--------------------------------
+- Do NOT reintroduce template-based frontend routes.
+- Do NOT disable CSRF.
+- Do NOT store JWTs in localStorage or sessionStorage.
+- Do NOT add APIs outside /api/.
+- Do NOT guess endpoints — inspect urls.py.
+
+--------------------------------
+EXPECTED END STATE
+--------------------------------
+- "/" → JSON
+- "/api/..." → APIs
+- "/admin/" → Django admin only
+- No other HTML endpoints accessible

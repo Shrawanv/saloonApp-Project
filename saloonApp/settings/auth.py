@@ -6,9 +6,10 @@ from decouple import config
 
 AUTH_USER_MODEL = "accounts.User"
 
-LOGIN_URL = "/login/"
+# API-first: no template login. Auth redirects (e.g. @login_required) go to admin.
+LOGIN_URL = "/admin/login/"
 LOGOUT_REDIRECT_URL = "/"
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "/admin/"
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),

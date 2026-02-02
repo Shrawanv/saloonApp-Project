@@ -1,16 +1,19 @@
 """
-Public auth endpoints only: login, refresh, logout.
+Public auth endpoints only: login, refresh, logout, CSRF, me.
 JWT stored in HttpOnly cookies only; never returned in JSON.
 """
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
+from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_GET
+from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
 
+from api.authentication import clear_jwt_cookies, set_jwt_cookies
 from api.serializers import LoginSerializer, UserSerializer
-from api.authentication import set_jwt_cookies, clear_jwt_cookies
 
 
 class LoginView(APIView):
@@ -83,12 +86,14 @@ class LogoutView(APIView):
         return response
 
 
-class CSRFView(APIView):
-    """GET: ensure CSRF cookie is set for clients that need it (e.g. SPA)."""
-    permission_classes = [AllowAny]
-
-    def get(self, request):
-        return Response({"detail": "CSRF cookie set."}, status=status.HTTP_200_OK)
+@require_GET
+@ensure_csrf_cookie
+def csrf_view(request):
+    """
+    GET-only endpoint to force Django to set the CSRF cookie.
+    No templates, no token in JSON body.
+    """
+    return JsonResponse({"detail": "CSRF cookie set."})
 
 
 class MeView(APIView):
