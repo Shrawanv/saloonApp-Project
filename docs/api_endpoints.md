@@ -94,13 +94,69 @@ GET | `/api/bookings/mine/` | `MyAppointmentsAPIView` | `IsAuthenticated`, `IsCu
 Vendor Service Management Endpoints
 -----------------------------------
 
+### POST `/api/vendor/services/` — Create service (vendor only)
+
+| Item | Detail |
+|------|--------|
+| **Method** | POST |
+| **Path** | `/api/vendor/services/` (trailing slash required) |
+| **View** | `VendorServiceListCreateAPIView` |
+| **Permission classes** | `IsAuthenticated`, `IsVendor` |
+| **Role scope** | vendor only (401 unauthenticated, 403 if authenticated but not vendor) |
+| **Response** | JSON only; 201 on success with `ServiceSerializer` data; all errors return JSON with appropriate status. |
+
+**Request body (required):**
+
+```json
+{
+  "salon_id": 1,
+  "name": "Haircut",
+  "price": "25.00",
+  "duration": 30,
+  "is_active": true
+}
+```
+
+| Field | Type | Required | Validation |
+|-------|------|----------|------------|
+| `salon_id` | number | Yes | Salon must exist. Ownership is checked after validation: salon must belong to the authenticated vendor. |
+| `name` | string | Yes | Max 100 characters. |
+| `price` | number/string | Yes | Decimal, max 8 digits, 2 decimal places, ≥ 0. |
+| `duration` | number | Yes | Integer, duration in minutes, ≥ 1. |
+| `is_active` | boolean | No | Default `true`. |
+
+**Ownership rules:**
+
+- The authenticated user must be a vendor (role `VENDOR`).
+- The salon identified by `salon_id` must be owned by that vendor (`salon.owner_id == request.user.id`).
+- If the salon does not exist: **404 Not Found** (JSON).
+- If the salon exists but is not owned by the vendor: **403 Forbidden** (JSON).
+
+**Validation rules:**
+
+- All request validation is done via DRF serializer (`VendorServiceCreateSerializer`); no manual field extraction.
+- Invalid types or missing required fields → **400 Bad Request** with serializer error payload (e.g. `{"name": ["This field is required."]}`).
+- DB constraint violations (e.g. integrity errors) → **400 Bad Request** with a generic detail message; creation is wrapped in an atomic transaction.
+
+**Error responses (all JSON):**
+
+| Status | When | Body example |
+|--------|------|--------------|
+| 400 | Validation failed (missing/invalid fields) | `{"salon_id": ["This field is required."]}` or `{"price": ["A valid number is required."]}` |
+| 400 | IntegrityError / duplicate or invalid DB state | `{"detail": "Invalid or duplicate data; service could not be created."}` |
+| 403 | Salon exists but vendor does not own it | `{"detail": "You do not have permission to add services to this salon."}` |
+| 404 | Salon not found | `{"detail": "Salon not found."}` |
+
+**Performance:** One query to resolve salon; one insert inside `transaction.atomic()`; no N+1.
+
+---
+
 Method | Path | View | Permission classes | Role scope | Description | Special notes
 ------ | ---- | ---- | ------------------ | ---------- | ----------- | -------------
 GET | `/api/vendor/services/` | `VendorServiceListCreateAPIView` | `IsAuthenticated`, `IsVendor` | vendor | List vendor’s own services. | Optional `?salon=` filter; only services for salons owned by the vendor.
-POST | `/api/vendor/services/` | `VendorServiceListCreateAPIView` | `IsAuthenticated`, `IsVendor` | vendor | Create a new service for a vendor-owned salon. | Requires `salon_id` in body; validates ownership and data with `ServiceSerializer`; sets `is_active=True`.
-GET | `/api/vendor/services/<int:pk>/` | `VendorServiceDetailAPIView` | `IsAuthenticated`, `IsVendor` | vendor | Retrieve details of a single vendor-owned service. | 404 if service not found or not owned by vendor.
+GET | `/api/vendor/services/<int:pk>/` | `VendorServiceDetailAPIView` | `IsAuthenticated`, `IsVendor` | vendor | Retrieve details of a single vendor-owned service. | 404 if service not found or not owned by vendor (JSON).
 PATCH | `/api/vendor/services/<int:pk>/` | `VendorServiceDetailAPIView` | `IsAuthenticated`, `IsVendor` | vendor | Partially update a vendor-owned service. | Uses `ServiceSerializer(partial=True)`; only for services owned by the vendor.
-DELETE | `/api/vendor/services/<int:pk>/` | `VendorServiceDetailAPIView` | `IsAuthenticated`, `IsVendor` | vendor | Delete a vendor-owned service. | Hard delete; 204 on success; 404 if not owned or missing.
+DELETE | `/api/vendor/services/<int:pk>/` | `VendorServiceDetailAPIView` | `IsAuthenticated`, `IsVendor` | vendor | Delete a vendor-owned service. | Hard delete; 204 on success; 404 if not owned or missing (JSON).
 
 ---
 

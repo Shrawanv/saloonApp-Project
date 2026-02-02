@@ -43,6 +43,20 @@ class ServiceSerializer(serializers.ModelSerializer):
         read_only_fields = ("id", "salon")
 
 
+class VendorServiceCreateSerializer(serializers.Serializer):
+    """POST /api/vendor/services/. Validates body; salon ownership checked in view."""
+    salon_id = serializers.IntegerField(required=True)
+    name = serializers.CharField(required=True, max_length=100)
+    price = serializers.DecimalField(
+        required=True,
+        max_digits=8,
+        decimal_places=2,
+        min_value=0,
+    )
+    duration = serializers.IntegerField(required=True, min_value=1)
+    is_active = serializers.BooleanField(default=True, required=False)
+
+
 class AppointmentSerializer(serializers.ModelSerializer):
     salon_name = serializers.CharField(source="salon.name", read_only=True)
     services_detail = ServiceSerializer(source="services", many=True, read_only=True)

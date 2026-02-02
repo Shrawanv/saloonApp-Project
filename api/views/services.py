@@ -1,11 +1,14 @@
 """Services by salon (authenticated). Vendor service CRUD (vendor only)."""
+from django.db import transaction, IntegrityError
+
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+
 from salons.models import Salon
 from services.models import Service
-from api.serializers import ServiceSerializer
+from api.serializers import ServiceSerializer, VendorServiceCreateSerializer
 from api.permissions import IsVendor
 
 
@@ -50,23 +53,39 @@ class VendorServiceListCreateAPIView(APIView):
         return Response({"services": ser.data}, status=status.HTTP_200_OK)
 
     def post(self, request):
-        salon_id = request.data.get("salon_id")
-        if not salon_id:
+        ser = VendorServiceCreateSerializer(data=request.data)
+        if not ser.is_valid():
+            return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+        data = ser.validated_data
+        salon = Salon.objects.filter(id=data["salon_id"]).first()
+        if not salon:
             return Response(
-                {"salon_id": ["This field is required."]},
-                status=status.HTTP_400_BAD_REQUEST,
+                {"detail": "Salon not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if salon.owner_id != request.user.id:
+            return Response(
+                {"detail": "You do not have permission to add services to this salon."},
+                status=status.HTTP_403_FORBIDDEN,
             )
         try:
-            salon = Salon.objects.get(id=int(salon_id), owner=request.user)
-        except (ValueError, Salon.DoesNotExist):
+            with transaction.atomic():
+                service = Service.objects.create(
+                    salon=salon,
+                    name=data["name"],
+                    price=data["price"],
+                    duration=data["duration"],
+                    is_active=data.get("is_active", True),
+                )
+        except IntegrityError:
             return Response(
-                {"salon_id": ["Salon not found or not owned."]},
+                {"detail": "Invalid or duplicate data; service could not be created."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        ser = ServiceSerializer(data=request.data, partial=True)
-        ser.is_valid(raise_exception=True)
-        ser.save(salon=salon, is_active=True)
-        return Response(ser.data, status=status.HTTP_201_CREATED)
+        return Response(
+            ServiceSerializer(service).data,
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class VendorServiceDetailAPIView(APIView):
