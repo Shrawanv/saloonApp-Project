@@ -27,9 +27,24 @@ Customer & General Browsing Endpoints
 
 Method | Path | View | Permission classes | Role scope | Description | Special notes
 ------ | ---- | ---- | ------------------ | ---------- | ----------- | -------------
-GET | `/api/salons/` | `SalonListAPIView` | `IsAuthenticated` | auth-any | List active salons. | Queryset filtered by `is_active=True`, ordered by name; JSON-only.
-GET | `/api/services/` | `ServiceListBySalonAPIView` | `IsAuthenticated` | auth-any | List active services for a specific salon. | Requires `?salon_id=`; 400 if missing; 404 if salon not found or inactive.
+GET | `/api/salons/` | `SalonListAPIView` | `IsAuthenticated` | auth-any | List active salons (paginated). | Pagination: `page`, `page_size` (max 100); queryset `is_active=True`, ordered by name; JSON-only.
+GET | `/api/services/` | `ServiceListBySalonAPIView` | `IsAuthenticated` | auth-any | List active services for a salon (paginated). | Requires `?salon_id=`; 400 if missing; 404 if salon not found; `select_related("salon")`; pagination: `page`, `page_size`.
 GET | `/api/slots/` | `SlotsAPIView` | `IsAuthenticated` | auth-any | Get available booking slots. | Requires `salon_id` and `date` (`YYYY-MM-DD`); optional `duration_minutes`; validates input and uses `get_slot_availability`.
+
+---
+
+Customer CRUD APIs (`/api/customer/`)
+-------------------------------------
+
+Customer can manage **only their own** profile and bookings. Ownership enforced at queryset level (e.g. `request.user.appointments`). All require `IsAuthenticated` + `IsCustomer`; 401 if unauthenticated, 403 if not customer.
+
+Method | Path | View | Permission classes | Role scope | Description | Special notes
+------ | ---- | ---- | ------------------ | ---------- | ----------- | -------------
+GET | `/api/customer/profile/` | `CustomerProfileAPIView` | `IsAuthenticated`, `IsCustomer` | customer | Read own profile. | Returns `UserSerializer` (id, username, first_name, last_name, role, mobile, pincode); no password.
+PATCH | `/api/customer/profile/` | `CustomerProfileAPIView` | `IsAuthenticated`, `IsCustomer` | customer | Update own profile. | Body: `first_name`, `last_name`, `mobile`, `pincode` (all optional). Validated via `CustomerProfileUpdateSerializer`; no role/username change.
+GET | `/api/customer/bookings/` | `CustomerBookingListAPIView` | `IsAuthenticated`, `IsCustomer` | customer | List own bookings (paginated). | Queryset: `request.user.appointments`; `select_related("salon")`, `prefetch_related("services")`; ordered by most recent; pagination: `page`, `page_size` (max 100).
+GET | `/api/customer/bookings/<id>/` | `CustomerBookingDetailAPIView` | `IsAuthenticated`, `IsCustomer` | customer | Retrieve one own booking. | 404 if not found or not owned; JSON only.
+DELETE | `/api/customer/bookings/<id>/` | `CustomerBookingDetailAPIView` | `IsAuthenticated`, `IsCustomer` | customer | Cancel own booking. | **Rules:** status must be `BOOKED`; `appointment_date` must be >= today. 400 if already cancelled/completed or past; 404 if not owned. Sets status to `CANCELLED`; 204 on success.
 
 ---
 
@@ -87,11 +102,26 @@ Customer Booking Endpoints
 
 Method | Path | View | Permission classes | Role scope | Description | Special notes
 ------ | ---- | ---- | ------------------ | ---------- | ----------- | -------------
-GET | `/api/bookings/mine/` | `MyAppointmentsAPIView` | `IsAuthenticated`, `IsCustomer` | customer | List current customer’s appointments. | Uses `select_related("salon")` and `prefetch_related("services")`; ordered by most recent.
+GET | `/api/bookings/mine/` | `MyAppointmentsAPIView` | `IsAuthenticated`, `IsCustomer` | customer | List current customer’s appointments (paginated). | Uses `select_related("salon")`, `prefetch_related("services")`; ordered by most recent; pagination: `page`, `page_size` (max 100).
 
 ---
 
-Vendor Service Management Endpoints
+Vendor Salons CRUD (`/api/vendor/salons/`)
+------------------------------------------
+
+Vendor can manage **only salons they own**. Ownership enforced via `request.user.salons` (queryset filtered by `owner=request.user`). All require `IsAuthenticated` + `IsVendor`; 401/403 otherwise. JSON only; no HTML.
+
+Method | Path | View | Permission classes | Role scope | Description | Special notes
+------ | ---- | ---- | ------------------ | ---------- | ----------- | -------------
+GET | `/api/vendor/salons/` | `VendorSalonListCreateAPIView` | `IsAuthenticated`, `IsVendor` | vendor | List own salons (paginated). | Queryset: `request.user.salons.order_by("name")`; pagination: `page`, `page_size` (max 100).
+POST | `/api/vendor/salons/` | `VendorSalonListCreateAPIView` | `IsAuthenticated`, `IsVendor` | vendor | Create salon (owner=request.user). | Body validated via `VendorSalonCreateUpdateSerializer`: name, mobile, pincode, opening_time, closing_time, break_start_time, break_end_time (optional), slot_duration (default 60), max_capacity_per_slot (default 1), is_active (default true). Owner set in view; creation in `transaction.atomic()`; 400 on IntegrityError.
+GET | `/api/vendor/salons/<id>/` | `VendorSalonDetailAPIView` | `IsAuthenticated`, `IsVendor` | vendor | Retrieve one own salon. | 404 if not found or not owned (JSON).
+PATCH | `/api/vendor/salons/<id>/` | `VendorSalonDetailAPIView` | `IsAuthenticated`, `IsVendor` | vendor | Update one own salon. | Partial update; validated via `VendorSalonCreateUpdateSerializer`; 404 if not owned.
+DELETE | `/api/vendor/salons/<id>/` | `VendorSalonDetailAPIView` | `IsAuthenticated`, `IsVendor` | vendor | Delete one own salon. | 204 on success; 404 if not owned (JSON).
+
+---
+
+Vendor Service Management Endpoints (`/api/vendor/services/`)
 -----------------------------------
 
 ### POST `/api/vendor/services/` — Create service (vendor only)
@@ -153,7 +183,7 @@ Vendor Service Management Endpoints
 
 Method | Path | View | Permission classes | Role scope | Description | Special notes
 ------ | ---- | ---- | ------------------ | ---------- | ----------- | -------------
-GET | `/api/vendor/services/` | `VendorServiceListCreateAPIView` | `IsAuthenticated`, `IsVendor` | vendor | List vendor’s own services. | Optional `?salon=` filter; only services for salons owned by the vendor.
+GET | `/api/vendor/services/` | `VendorServiceListCreateAPIView` | `IsAuthenticated`, `IsVendor` | vendor | List vendor’s own services (paginated). | Optional `?salon=` filter; queryset filtered by `salon__owner=request.user`; `select_related("salon")`; pagination: `page`, `page_size` (max 100).
 GET | `/api/vendor/services/<int:pk>/` | `VendorServiceDetailAPIView` | `IsAuthenticated`, `IsVendor` | vendor | Retrieve details of a single vendor-owned service. | 404 if service not found or not owned by vendor (JSON).
 PATCH | `/api/vendor/services/<int:pk>/` | `VendorServiceDetailAPIView` | `IsAuthenticated`, `IsVendor` | vendor | Partially update a vendor-owned service. | Uses `ServiceSerializer(partial=True)`; only for services owned by the vendor.
 DELETE | `/api/vendor/services/<int:pk>/` | `VendorServiceDetailAPIView` | `IsAuthenticated`, `IsVendor` | vendor | Delete a vendor-owned service. | Hard delete; 204 on success; 404 if not owned or missing (JSON).

@@ -5,7 +5,7 @@ JWT in HttpOnly cookies only; no tokens in JSON.
 from django.urls import path, include
 from api.views.auth import LoginView, RefreshView, LogoutView, csrf_view, MeView
 from api.views.salons import SalonListAPIView
-from api.views.services import ServiceListBySalonAPIView, VendorServiceListCreateAPIView, VendorServiceDetailAPIView
+from api.views.services import ServiceListBySalonAPIView
 from api.views.slots import SlotsAPIView
 from api.views.bookings import BookAppointmentAPIView, MyAppointmentsAPIView
 
@@ -24,7 +24,9 @@ urlpatterns = [
     path("bookings/", BookAppointmentAPIView.as_view(), name="api-book"),
     path("bookings/mine/", MyAppointmentsAPIView.as_view(), name="api-my-appointments"),
 
-    # Vendor only
-    path("vendor/services/", VendorServiceListCreateAPIView.as_view(), name="api-vendor-service-list"),
-    path("vendor/services/<int:pk>/", VendorServiceDetailAPIView.as_view(), name="api-vendor-service-detail"),
+    # Customer only (profile, bookings)
+    path("customer/", include("api.urls_customer")),
+
+    # Vendor only (salons, services)
+    path("vendor/", include("api.urls_vendor")),
 ]

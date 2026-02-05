@@ -1,15 +1,23 @@
 """Book appointment (customer only). List appointments (customer)."""
 from datetime import date
+
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.pagination import PageNumberPagination
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 
 from salons.models import Salon
 from api.serializers import BookAppointmentSerializer, AppointmentSerializer
 from api.permissions import IsCustomer
+
+
+class BookingListPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = "page_size"
+    max_page_size = 100
 from bookings.services import book_appointment
 
 
@@ -48,10 +56,15 @@ class BookAppointmentAPIView(APIView):
 
 
 class MyAppointmentsAPIView(APIView):
-    """GET: list current user's appointments. Customer only."""
+    """GET: list current user's appointments (paginated). Customer only."""
     permission_classes = [IsAuthenticated, IsCustomer]
 
     def get(self, request):
         qs = request.user.appointments.select_related("salon").prefetch_related("services").order_by("-appointment_date", "-slot_start")
+        paginator = BookingListPagination()
+        page = paginator.paginate_queryset(qs, request)
+        if page is not None:
+            ser = AppointmentSerializer(page, many=True)
+            return paginator.get_paginated_response(ser.data)
         ser = AppointmentSerializer(qs, many=True)
-        return Response({"appointments": ser.data}, status=status.HTTP_200_OK)
+        return Response({"results": ser.data}, status=status.HTTP_200_OK)

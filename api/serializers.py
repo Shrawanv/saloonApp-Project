@@ -17,6 +17,14 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class CustomerProfileUpdateSerializer(serializers.Serializer):
+    """PATCH /api/customer/profile/. Customer can update only these fields."""
+    first_name = serializers.CharField(required=False, max_length=150, allow_blank=True)
+    last_name = serializers.CharField(required=False, max_length=150, allow_blank=True)
+    mobile = serializers.CharField(required=False, max_length=15)
+    pincode = serializers.CharField(required=False, max_length=10)
+
+
 class SalonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Salon
@@ -34,6 +42,20 @@ class SalonSerializer(serializers.ModelSerializer):
             "is_active",
         )
         read_only_fields = fields
+
+
+class VendorSalonCreateUpdateSerializer(serializers.Serializer):
+    """POST/PATCH /api/vendor/salons/. Validates body; owner set in view."""
+    name = serializers.CharField(required=True, max_length=255)
+    mobile = serializers.CharField(required=True, max_length=15)
+    pincode = serializers.CharField(required=True, max_length=10)
+    opening_time = serializers.TimeField(required=True)
+    closing_time = serializers.TimeField(required=True)
+    break_start_time = serializers.TimeField(required=False, allow_null=True)
+    break_end_time = serializers.TimeField(required=False, allow_null=True)
+    slot_duration = serializers.IntegerField(required=False, default=60, min_value=1)
+    max_capacity_per_slot = serializers.IntegerField(required=False, default=1, min_value=1)
+    is_active = serializers.BooleanField(required=False, default=True)
 
 
 class ServiceSerializer(serializers.ModelSerializer):
