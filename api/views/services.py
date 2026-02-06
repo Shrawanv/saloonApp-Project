@@ -29,8 +29,8 @@ class ServiceListBySalonAPIView(APIView):
     """GET: list active services for a salon (paginated). Query: salon_id."""
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        salon_id = request.query_params.get("salon_id")
+    def get(self, request, salon_id=None):
+        salon_id = salon_id or request.query_params.get("salon") or request.query_params.get("salon_id")
         if not salon_id:
             return Response(
                 {"detail": "salon_id required."},
@@ -48,9 +48,9 @@ class ServiceListBySalonAPIView(APIView):
         page = paginator.paginate_queryset(qs, request)
         if page is not None:
             ser = ServiceSerializer(page, many=True)
-            return paginator.get_paginated_response(ser.data)
+            return Response(ser.data, status=status.HTTP_200_OK)
         ser = ServiceSerializer(qs, many=True)
-        return Response({"results": ser.data}, status=status.HTTP_200_OK)
+        return Response(ser.data, status=status.HTTP_200_OK)
 
 
 class VendorServiceListCreateAPIView(APIView):
@@ -141,3 +141,19 @@ class VendorServiceDetailAPIView(APIView):
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
         service.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class VendorServiceToggleAPIView(APIView):
+    """Vendor: POST toggle is_active for a service."""
+    permission_classes = [IsAuthenticated, IsVendor]
+
+    def post(self, request, pk):
+        service = Service.objects.filter(
+            id=pk,
+            salon__owner=request.user,
+        ).first()
+        if not service:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        service.is_active = not service.is_active
+        service.save(update_fields=["is_active"])
+        return Response(ServiceSerializer(service).data, status=status.HTTP_200_OK)

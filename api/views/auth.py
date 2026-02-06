@@ -13,7 +13,8 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.authentication import clear_jwt_cookies, set_jwt_cookies
-from api.serializers import LoginSerializer, UserSerializer
+from django.contrib.auth import get_user_model
+from api.serializers import LoginSerializer, UserSerializer, RegisterSerializer
 
 
 class LoginView(APIView):
@@ -41,7 +42,10 @@ class LoginView(APIView):
             )
         refresh = RefreshToken.for_user(user)
         response = Response(
-            {"user": UserSerializer(user).data},
+            {
+                "user": UserSerializer(user).data,
+                "message": "Login successful.",
+            },
             status=status.HTTP_200_OK,
         )
         set_jwt_cookies(response, str(refresh.access_token), str(refresh))
@@ -102,3 +106,35 @@ class MeView(APIView):
 
     def get(self, request):
         return Response(UserSerializer(request.user).data, status=status.HTTP_200_OK)
+
+
+class RegisterView(APIView):
+    """POST: register a new user (CUSTOMER or VENDOR). Sets cookies; returns user only."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        ser = RegisterSerializer(data=request.data)
+        if not ser.is_valid():
+            return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+        data = ser.validated_data
+        User = get_user_model()
+        user = User.objects.create_user(
+            username=data["username"],
+            email=data["email"],
+            password=data["password"],
+            first_name=data.get("first_name", ""),
+            last_name=data.get("last_name", ""),
+            mobile=data["mobile"],
+            pincode=data["pincode"],
+            role=data["role"],
+        )
+        refresh = RefreshToken.for_user(user)
+        response = Response(
+            {
+                "user": UserSerializer(user).data,
+                "message": "Registration successful.",
+            },
+            status=status.HTTP_201_CREATED,
+        )
+        set_jwt_cookies(response, str(refresh.access_token), str(refresh))
+        return response

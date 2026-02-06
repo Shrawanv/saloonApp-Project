@@ -1,0 +1,73 @@
+.dashboard-header {
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-header h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.dashboard-header p {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.dashboard-tabs {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  margin-bottom: 2rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-card);
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-smooth);
+}
+
+.tab-btn:hover:not(.active) {
+  background: var(--color-primary-light);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.tab-btn.active {
+  background: var(--color-primary);
+  color: var(--color-accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-content {
+  min-height: 400px;
+}
+
+.guest-login-banner {
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.25rem;
+  background: var(--color-primary-light);
+  border-radius: var(--radius-sm);
+}
+
+.guest-login-banner p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.guest-login-banner a {
+  color: var(--color-primary-dark);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.guest-login-banner a:hover {
+  text-decoration: none;
+}

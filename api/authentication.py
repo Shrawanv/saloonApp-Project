@@ -7,8 +7,7 @@ from django.conf import settings
 
 class JWTCookieAuthentication(JWTAuthentication):
     """
-    Read JWT access token from HttpOnly cookie only.
-    Do not accept Authorization header for API (cookie-only).
+    Read JWT access token from HttpOnly cookie OR Authorization header.
     """
 
     def authenticate(self, request):
@@ -18,10 +17,11 @@ class JWTCookieAuthentication(JWTAuthentication):
             "access_token",
         )
         raw_token = request.COOKIES.get(cookie_name)
-        if not raw_token:
-            return None
-        validated_token = self.get_validated_token(raw_token)
-        return self.get_user(validated_token), validated_token
+        if raw_token:
+            validated_token = self.get_validated_token(raw_token)
+            return self.get_user(validated_token), validated_token
+
+        return super().authenticate(request)
 
 
 def set_jwt_cookies(response, access_token, refresh_token=None):

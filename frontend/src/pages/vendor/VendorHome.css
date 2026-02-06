@@ -1,0 +1,95 @@
+.vendor-home-header {
+  margin-bottom: 2rem;
+}
+
+.vendor-home-header h1 {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.vendor-home-header p {
+  color: var(--color-text-muted);
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.5rem;
+}
+
+.chart-placeholder {
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
+}
+
+.chart-placeholder:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+}
+
+.chart-placeholder h4 {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.chart-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.loading-state,
+.error-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--color-text-muted);
+}
+
+.error-state {
+  color: #dc2626;
+  background: #fee2e2;
+  border-radius: var(--radius);
+  margin-bottom: 1rem;
+}
+
+.no-salon-state {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.no-salon-state h3 {
+  margin-bottom: 1rem;
+}
+
+.no-salon-state p {
+  color: var(--color-text-muted);
+  margin-bottom: 1.5rem;
+}
+
+.quick-actions {
+  margin-top: 2rem;
+  padding: 1.5rem;
+}
+
+.quick-actions h3 {
+  margin-bottom: 1rem;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.action-buttons .btn {
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
+}
+
+.action-buttons .btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-glow);
+}

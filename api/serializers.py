@@ -105,6 +105,26 @@ class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only=True)
 
+class RegisterSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True, max_length=150)
+    email = serializers.EmailField(required=True)
+    password = serializers.CharField(required=True, write_only=True, min_length=6)
+    password_confirm = serializers.CharField(required=True, write_only=True, min_length=6)
+    first_name = serializers.CharField(required=False, max_length=150, allow_blank=True)
+    last_name = serializers.CharField(required=False, max_length=150, allow_blank=True)
+    mobile = serializers.CharField(required=True, max_length=15)
+    pincode = serializers.CharField(required=True, max_length=10)
+    role = serializers.ChoiceField(choices=("CUSTOMER", "VENDOR"), required=True)
+
+    def validate(self, attrs):
+        if attrs["password"] != attrs["password_confirm"]:
+            raise serializers.ValidationError({"password_confirm": "Passwords do not match."})
+        if User.objects.filter(username=attrs["username"]).exists():
+            raise serializers.ValidationError({"username": "This username is already taken."})
+        if User.objects.filter(email=attrs["email"]).exists():
+            raise serializers.ValidationError({"email": "This email is already registered."})
+        return attrs
+
 
 class BookAppointmentSerializer(serializers.Serializer):
     """POST /api/bookings/. Multi-service: service_ids required (non-empty list)."""

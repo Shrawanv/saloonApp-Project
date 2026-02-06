@@ -25,6 +25,17 @@ class SalonListAPIView(APIView):
         page = paginator.paginate_queryset(qs, request)
         if page is not None:
             ser = SalonSerializer(page, many=True)
-            return paginator.get_paginated_response(ser.data)
+            return Response(ser.data, status=status.HTTP_200_OK)
         ser = SalonSerializer(qs, many=True)
-        return Response({"results": ser.data}, status=status.HTTP_200_OK)
+        return Response(ser.data, status=status.HTTP_200_OK)
+
+
+class SalonDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        try:
+            salon = Salon.objects.get(id=int(pk), is_active=True)
+        except (ValueError, Salon.DoesNotExist):
+            return Response({"detail": "Salon not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(SalonSerializer(salon).data, status=status.HTTP_200_OK)

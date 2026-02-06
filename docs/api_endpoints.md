@@ -15,6 +15,7 @@ Auth Endpoints
 Method | Path | View | Permission classes | Role scope | Description | Special notes
 ------ | ---- | ---- | ------------------ | ---------- | ----------- | -------------
 POST | `/api/auth/login/` | `LoginView` | `AllowAny` | any | Username/password login, sets JWT access + refresh in HttpOnly cookies, returns user JSON. | No tokens in JSON; cookies only.
+POST | `/api/auth/register/` | `RegisterView` | `AllowAny` | any | Register a new user (role `CUSTOMER` or `VENDOR`), sets JWT access + refresh in HttpOnly cookies, returns user JSON. | No tokens in JSON; cookies only. Body required: `username`, `email`, `password`, `password_confirm`, `first_name` (optional), `last_name` (optional), `mobile`, `pincode`, `role`. 400 on validation errors; 201 on success.
 POST | `/api/auth/refresh/` | `RefreshView` | `AllowAny` | any | Reads refresh token from HttpOnly cookie and issues new access token cookie. | No tokens in JSON; requires valid `refresh_token` cookie.
 POST | `/api/auth/logout/` | `LogoutView` | `AllowAny` | any | Clears JWT cookies; idempotent. | Does not require auth; safe to call even if not logged in.
 GET | `/api/auth/csrf/` | `csrf_view` | (Django view, no DRF permission class) | any | Ensures CSRF cookie is set. | Uses `@require_GET` and `@ensure_csrf_cookie`; CSRF token **not** returned in JSON; cookie must appear as `csrftoken`.

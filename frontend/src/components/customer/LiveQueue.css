@@ -1,0 +1,78 @@
+.live-queue {
+  max-width: 500px;
+}
+
+.queue-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.live-badge {
+  color: var(--color-success);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.estimated-wait {
+  color: var(--color-text-muted);
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.queue-list {
+  margin-bottom: 1.5rem;
+}
+
+.queue-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.5rem;
+  transition: all var(--transition-smooth);
+}
+
+.queue-item:hover {
+  background: var(--color-card);
+  box-shadow: var(--shadow-sm);
+  transform: translateX(4px);
+}
+
+.queue-item.highlight {
+  background: var(--color-primary-light);
+  border: 2px solid var(--color-primary);
+}
+
+.queue-item.highlight:hover {
+  box-shadow: var(--shadow-glow);
+}
+
+.queue-position {
+  font-weight: 700;
+  color: var(--color-primary-dark);
+  min-width: 32px;
+}
+
+.queue-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.queue-name {
+  font-weight: 500;
+}
+
+.queue-service {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.queue-time {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}

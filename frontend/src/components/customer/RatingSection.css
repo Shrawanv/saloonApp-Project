@@ -1,0 +1,52 @@
+.rating-section {
+  max-width: 400px;
+}
+
+.rating-overview {
+  text-align: center;
+  padding: 1rem 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.avg-rating {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.avg-rating .number {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.avg-rating .stars {
+  font-size: 1.5rem;
+}
+
+.rating-overview p {
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
+
+.rate-now h4 {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.star-select {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.star-btn {
+  font-size: 2rem;
+  background: none;
+  padding: 0.25rem;
+  transition: transform var(--transition-bounce);
+}
+
+.star-btn:hover {
+  transform: scale(1.25);
+}

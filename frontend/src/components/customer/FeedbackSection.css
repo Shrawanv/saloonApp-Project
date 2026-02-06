@@ -1,0 +1,75 @@
+.feedback-section {
+  max-width: 600px;
+}
+
+.feedback-form {
+  margin-bottom: 2rem;
+}
+
+.feedback-form h3 {
+  margin-bottom: 1rem;
+}
+
+.feedback-form textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #e5e5e5;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 1rem;
+  resize: vertical;
+  margin-bottom: 1rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.feedback-form textarea:hover {
+  border-color: #d4d4d4;
+}
+
+.feedback-form textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
+}
+
+.feedback-list h4 {
+  margin-bottom: 1rem;
+}
+
+.feedback-card {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-smooth);
+}
+
+.feedback-card:hover {
+  background: var(--color-bg);
+  box-shadow: var(--shadow-sm);
+}
+
+.fb-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.fb-user {
+  font-weight: 600;
+}
+
+.fb-rating {
+  font-size: 0.9rem;
+}
+
+.fb-text {
+  color: var(--color-text-muted);
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.fb-date {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}

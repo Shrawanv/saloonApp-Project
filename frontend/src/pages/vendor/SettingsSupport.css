@@ -1,0 +1,12 @@
+.settings-support-page h1 {
+  margin-bottom: 1.5rem;
+}
+
+.tab-content select,
+.tab-content textarea {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 2px solid #e5e5e5;
+  border-radius: var(--radius-sm);
+}

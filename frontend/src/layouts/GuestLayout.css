@@ -1,0 +1,57 @@
+.guest-layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.guest-header .logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-primary-light);
+}
+
+.guest-header {
+  background: var(--color-accent);
+  color: white;
+  padding: 1rem 0;
+  box-shadow: var(--shadow-md);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.guest-header .header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.guest-badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.guest-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.guest-nav a {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  transition: opacity var(--transition-fast);
+}
+
+.guest-nav a:hover {
+  opacity: 0.9;
+}
+
+.guest-main {
+  flex: 1;
+  padding: 2rem 0;
+}
