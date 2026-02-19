@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { reviewService } from '../../services'
 import './RatingSection.css'
 
-function RatingSection({ salonId }) {
+function RatingSection({ salonId, salon }) {
   const [rating, setRating] = useState(0)
   const [hoverRating, setHoverRating] = useState(0)
-  const averageRating = 4.5
-  const totalReviews = 128
+
+  const averageRating = salon?.average_rating || 0
+  const totalReviews = salon?.reviews_count || 0
 
   return (
     <div className="rating-section card">
@@ -19,6 +21,7 @@ function RatingSection({ salonId }) {
 
       <div className="rate-now">
         <h4>Rate this salon</h4>
+        <p className="hint">Your rating will be submitted with your feedback in the Feedback tab.</p>
         <div className="star-select">
           {[1, 2, 3, 4, 5].map((star) => (
             <button

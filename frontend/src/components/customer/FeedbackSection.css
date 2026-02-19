@@ -48,6 +48,37 @@
   box-shadow: var(--shadow-sm);
 }
 
+.feedback-section {
+  padding: 1rem 0;
+}
+
+.container-center {
+  display: flex;
+  justify-content: center;
+}
+
+.feedback-form {
+  max-width: 500px;
+  width: 100%;
+}
+
+.feedback-hint {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.success-hint {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.rating-input {
+  margin-bottom: 1.5rem;
+}
+
 .fb-header {
   display: flex;
   justify-content: space-between;

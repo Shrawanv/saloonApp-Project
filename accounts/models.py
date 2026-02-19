@@ -18,6 +18,7 @@ class User(AbstractUser):
     )
     mobile = models.CharField(max_length=15)
     pincode = models.CharField(max_length=10)
+    profile_picture = models.ImageField(upload_to="profile_pics/", null=True, blank=True)
 
     def __str__(self):
         return f"{self.username} ({self.role})"

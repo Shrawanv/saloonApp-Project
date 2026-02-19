@@ -1,7 +1,7 @@
 """DRF serializers for API. Validation only; no UI assumptions."""
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from salons.models import Salon
+from salons.models import Salon, Review, SalonMedia
 from services.models import Service
 from bookings.models import Appointment
 
@@ -13,8 +13,8 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "username", "first_name", "last_name", "role", "mobile", "pincode")
-        read_only_fields = fields
+        fields = ("id", "username", "first_name", "last_name", "role", "mobile", "pincode", "profile_picture")
+        read_only_fields = ("id", "username", "role")
 
 
 class CustomerProfileUpdateSerializer(serializers.Serializer):
@@ -25,7 +25,16 @@ class CustomerProfileUpdateSerializer(serializers.Serializer):
     pincode = serializers.CharField(required=False, max_length=10)
 
 
+class SalonMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SalonMedia
+        fields = ("id", "salon", "file", "media_type", "created_at")
+        read_only_fields = ("id", "created_at")
+
+
 class SalonSerializer(serializers.ModelSerializer):
+    media = SalonMediaSerializer(many=True, read_only=True)
+
     class Meta:
         model = Salon
         fields = (
@@ -40,8 +49,12 @@ class SalonSerializer(serializers.ModelSerializer):
             "slot_duration",
             "max_capacity_per_slot",
             "is_active",
+            "average_rating",
+            "reviews_count",
+            "logo",
+            "media",
         )
-        read_only_fields = fields
+        read_only_fields = ("id", "average_rating", "reviews_count", "media")
 
 
 class VendorSalonCreateUpdateSerializer(serializers.Serializer):
@@ -81,12 +94,17 @@ class VendorServiceCreateSerializer(serializers.Serializer):
 
 class AppointmentSerializer(serializers.ModelSerializer):
     salon_name = serializers.CharField(source="salon.name", read_only=True)
-    services_detail = ServiceSerializer(source="services", many=True, read_only=True)
+    services_details = ServiceSerializer(source="services", many=True, read_only=True)
+    user_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Appointment
         fields = (
             "id",
+            "user",
+            "user_name",
+            "guest_name",
+            "guest_mobile",
             "salon",
             "salon_name",
             "appointment_date",
@@ -95,10 +113,18 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "total_amount",
             "duration_minutes",
             "services",
-            "services_detail",
+            "services_details",
+            "checked_in_at",
+            "payment_status",
+            "payment_mode",
             "created_at",
         )
-        read_only_fields = ("id", "user", "total_amount", "duration_minutes", "created_at")
+        read_only_fields = ("id", "user", "total_amount", "duration_minutes", "created_at", "checked_in_at")
+
+    def get_user_name(self, obj):
+        if obj.user:
+            return obj.user.get_full_name() or obj.user.username
+        return obj.guest_name
 
 
 class LoginSerializer(serializers.Serializer):
@@ -136,6 +162,8 @@ class BookAppointmentSerializer(serializers.Serializer):
     )
     appointment_date = serializers.DateField(required=True)
     slot_start = serializers.TimeField(required=True)
+    guest_name = serializers.CharField(required=False, max_length=100, allow_blank=True)
+    guest_mobile = serializers.CharField(required=False, max_length=15, allow_blank=True)
 
     def validate(self, attrs):
         salon_id = attrs["salon_id"]
@@ -152,3 +180,17 @@ class BookAppointmentSerializer(serializers.Serializer):
                 {"service_ids": "All services must exist and belong to the given salon."}
             )
         return attrs
+
+class ReviewSerializer(serializers.ModelSerializer):
+    user_name = serializers.CharField(source="user.username", read_only=True)
+    comment = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+    class Meta:
+        model = Review
+        fields = ("id", "salon", "user", "user_name", "rating", "comment", "created_at")
+        read_only_fields = ("id", "salon", "user", "created_at")
+
+    def validate_rating(self, value):
+        if value < 1 or value > 5:
+            raise serializers.ValidationError("Rating must be between 1 and 5.")
+        return value

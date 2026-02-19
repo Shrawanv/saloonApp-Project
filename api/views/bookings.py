@@ -4,7 +4,7 @@ from datetime import date
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.pagination import PageNumberPagination
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
@@ -22,8 +22,8 @@ from bookings.services import book_appointment
 
 
 class BookAppointmentAPIView(APIView):
-    """POST: book appointment. Customer only. Body: salon_id, service_ids[], appointment_date, slot_start."""
-    permission_classes = [IsAuthenticated, IsCustomer]
+    """POST: book appointment. Support guest bookings. Body: salon_id, service_ids[], appointment_date, slot_start, [guest_name, guest_mobile]."""
+    permission_classes = [AllowAny]
 
     def post(self, request):
         ser = BookAppointmentSerializer(data=request.data)
@@ -36,9 +36,16 @@ class BookAppointmentAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         salon = get_object_or_404(Salon, id=data["salon_id"], is_active=True)
+        
+        user = request.user if request.user.is_authenticated else None
+        guest_name = data.get("guest_name")
+        guest_mobile = data.get("guest_mobile")
+
         try:
             appointment = book_appointment(
-                user=request.user,
+                user=user,
+                guest_name=guest_name,
+                guest_mobile=guest_mobile,
                 salon=salon,
                 appointment_date=data["appointment_date"],
                 slot_start=data["slot_start"],
@@ -60,6 +67,9 @@ class MyAppointmentsAPIView(APIView):
     permission_classes = [IsAuthenticated, IsCustomer]
 
     def get(self, request):
+        # Auto-cancel past bookings for this user
+        Appointment.cancel_expired_appointments(user=request.user)
+        
         qs = request.user.appointments.select_related("salon").prefetch_related("services").order_by("-appointment_date", "-slot_start")
         paginator = BookingListPagination()
         page = paginator.paginate_queryset(qs, request)

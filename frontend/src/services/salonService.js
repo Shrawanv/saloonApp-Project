@@ -3,14 +3,16 @@ import api from './api'
 const salonService = {
   async getSalons(params = {}) {
     const response = await api.get('/salons/', { params })
-    return response.data
+    const data = response.data
+    return Array.isArray(data) ? data : (data.results || [])
   },
 
   async searchSalons(searchQuery) {
-    const response = await api.get('/salons/', { 
-      params: { search: searchQuery } 
+    const response = await api.get('/salons/', {
+      params: { search: searchQuery }
     })
-    return response.data
+    const data = response.data
+    return Array.isArray(data) ? data : (data.results || [])
   },
 
   async getSalonById(id) {
@@ -43,6 +45,12 @@ const salonService = {
 
   async deleteSalon(id) {
     const response = await api.delete(`/vendor/salons/${id}/`)
+    return response.data
+  },
+
+  async getLiveQueue(salonId, mobile = null) {
+    const params = mobile ? { mobile } : {}
+    const response = await api.get(`/salons/${salonId}/live-queue/`, { params })
     return response.data
   },
 }

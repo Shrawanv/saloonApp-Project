@@ -23,9 +23,17 @@ class VendorAppointmentListAPIView(APIView):
         return Appointment.objects.filter(salon__owner=request.user).select_related("salon", "user").prefetch_related("services").order_by("-appointment_date", "-slot_start")
 
     def get(self, request):
+        # Auto-cancel past bookings for all salons owned by this vendor
+        from salons.models import Salon
+        vendor_salons = Salon.objects.filter(owner=request.user)
+        for s in vendor_salons:
+            Appointment.cancel_expired_appointments(salon=s)
+
         qs = self.get_queryset(request)
         salon_id = request.query_params.get("salon")
         date_str = request.query_params.get("date")
+        start_date_str = request.query_params.get("start_date")
+        end_date_str = request.query_params.get("end_date")
         status_filter = request.query_params.get("status")
 
         if salon_id:
@@ -33,14 +41,36 @@ class VendorAppointmentListAPIView(APIView):
                 qs = qs.filter(salon__id=int(salon_id))
             except ValueError:
                 return Response({"detail": "Invalid salon id."}, status=status.HTTP_400_BAD_REQUEST)
+        
         if date_str:
             try:
                 target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+                qs = qs.filter(appointment_date=target_date)
             except ValueError:
-                return Response({"detail": "Invalid date format. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
-            qs = qs.filter(appointment_date=target_date)
+                return Response({"detail": "Invalid format for 'date'. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if start_date_str:
+            try:
+                start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+                qs = qs.filter(appointment_date__gte=start_date)
+            except ValueError:
+                return Response({"detail": "Invalid format for 'start_date'. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if end_date_str:
+            try:
+                end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+                qs = qs.filter(appointment_date__lte=end_date)
+            except ValueError:
+                return Response({"detail": "Invalid format for 'end_date'. Use YYYY-MM-DD."}, status=status.HTTP_400_BAD_REQUEST)
+
         if status_filter:
             qs = qs.filter(status=status_filter)
+        
+        confirmed_only = request.query_params.get("confirmed")
+        if confirmed_only == "true":
+            qs = qs.filter(checked_in_at__isnull=False)
+        elif confirmed_only == "false":
+            qs = qs.filter(checked_in_at__isnull=True)
 
         paginator = VendorAppointmentListPagination()
         page = paginator.paginate_queryset(qs, request)
@@ -58,11 +88,39 @@ class VendorAppointmentUpdateAPIView(APIView):
         appointment = Appointment.objects.filter(id=pk, salon__owner=request.user).first()
         if not appointment:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+        action = request.data.get("action")
+        if action == "check_in":
+            from django.utils import timezone
+            appointment.checked_in_at = timezone.now()
+            appointment.save(update_fields=["checked_in_at"])
+            return Response(AppointmentSerializer(appointment).data, status=status.HTTP_200_OK)
+        
+        if action == "undo_check_in":
+            appointment.checked_in_at = None
+            appointment.save(update_fields=["checked_in_at"])
+            return Response(AppointmentSerializer(appointment).data, status=status.HTTP_200_OK)
+
+        new_payment_status = request.data.get("payment_status")
+        if new_payment_status:
+            if new_payment_status not in {"PENDING", "PAID", "FAILED"}:
+                return Response({"detail": "Invalid payment status."}, status=status.HTTP_400_BAD_REQUEST)
+            appointment.payment_status = new_payment_status
+
+        new_payment_mode = request.data.get("payment_mode")
+        if new_payment_mode:
+            if new_payment_mode not in {"UNSET", "CASH", "ONLINE"}:
+                return Response({"detail": "Invalid payment mode."}, status=status.HTTP_400_BAD_REQUEST)
+            appointment.payment_mode = new_payment_mode
+
         new_status = request.data.get("status")
-        if new_status not in {"BOOKED", "COMPLETED", "CANCELLED"}:
-            return Response({"detail": "Invalid status."}, status=status.HTTP_400_BAD_REQUEST)
-        if appointment.status == "CANCELLED" or appointment.status == "COMPLETED":
-            return Response({"detail": "Cannot update a finalised appointment."}, status=status.HTTP_400_BAD_REQUEST)
-        appointment.status = new_status
-        appointment.save(update_fields=["status"])
+        if new_status:
+            if new_status not in {"BOOKED", "COMPLETED", "CANCELLED"}:
+                return Response({"detail": "Invalid status."}, status=status.HTTP_400_BAD_REQUEST)
+            if appointment.status == "CANCELLED" or appointment.status == "COMPLETED":
+                if appointment.status != new_status:
+                    return Response({"detail": "Cannot update a finalised appointment status."}, status=status.HTTP_400_BAD_REQUEST)
+            appointment.status = new_status
+        
+        appointment.save()
         return Response(AppointmentSerializer(appointment).data, status=status.HTTP_200_OK)

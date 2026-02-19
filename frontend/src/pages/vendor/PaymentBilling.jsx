@@ -1,45 +1,281 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { salonService, appointmentService } from '../../services'
 import './PaymentBilling.css'
 
-const PAYMENT_TABS = [
-  { id: 'mode', label: 'Accept Payment' },
-  { id: 'bill', label: 'Generate Bill' },
-]
-
 function PaymentBilling() {
-  const [activeTab, setActiveTab] = useState('mode')
+  const [salons, setSalons] = useState([])
+  const [selectedSalon, setSelectedSalon] = useState(null)
+  const [appointments, setAppointments] = useState([])
+  const [selectedAppointment, setSelectedAppointment] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [updating, setUpdating] = useState(false)
+  const [showQR, setShowQR] = useState(false)
+
+  const billRef = useRef()
+
+  useEffect(() => {
+    fetchSalons()
+  }, [])
+
+  useEffect(() => {
+    if (selectedSalon) {
+      fetchRecentAppointments()
+    }
+  }, [selectedSalon])
+
+  const fetchSalons = async () => {
+    try {
+      setLoading(true)
+      const data = await salonService.getMySalons()
+      setSalons(data)
+      if (data.length > 0) {
+        setSelectedSalon(data[0].id)
+      }
+    } catch (err) {
+      console.error('Error fetching salons:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchRecentAppointments = async () => {
+    try {
+      setLoading(true)
+      // Fetch only COMPLETED appointments for billing
+      const data = await appointmentService.getVendorAppointments({
+        salon: selectedSalon,
+        status: 'COMPLETED',
+        page_size: 50
+      })
+      setAppointments(data)
+    } catch (err) {
+      console.error('Error fetching appointments:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSelectAppointment = (id) => {
+    const apt = appointments.find(a => a.id === parseInt(id))
+    setSelectedAppointment(apt)
+  }
+
+  const handleAcceptPayment = async (mode) => {
+    if (!selectedAppointment) return
+
+    // If online, show QR first
+    if (mode === 'Online' && !showQR) {
+      setShowQR(true)
+      return
+    }
+
+    try {
+      setUpdating(true)
+      const payload = {
+        payment_status: 'PAID',
+        payment_mode: mode.toUpperCase()
+      }
+
+      // Also mark as COMPLETED if it was BOOKED
+      if (selectedAppointment.status === 'BOOKED') {
+        payload.status = 'COMPLETED'
+      }
+
+      await appointmentService.updateAppointmentStatus(selectedAppointment.id, payload.status, null, payload)
+
+      alert(`Payment of Rs. ${selectedAppointment.total_amount} recorded via ${mode}`)
+      setShowQR(false)
+
+      // Refresh data
+      await fetchRecentAppointments()
+      // Refresh current selection
+      const data = await appointmentService.getVendorAppointments({ salon: selectedSalon, page_size: 50 })
+      const updatedApt = data.find(a => a.id === selectedAppointment.id)
+      setSelectedAppointment(updatedApt)
+    } catch (err) {
+      console.error('Error updating payment:', err)
+      alert('Failed to process payment')
+    } finally {
+      setUpdating(false)
+    }
+  }
+
+  const handlePrint = () => {
+    window.print()
+  }
+
+  const selectedSalonData = salons.find(s => s.id === selectedSalon)
 
   return (
     <div className="payment-billing-page">
-      <h1>Payment & Billing</h1>
+      <div className="no-print">
+        <h1>Payment & Billing</h1>
 
-      <div className="vendor-tabs">
-        {PAYMENT_TABS.map((tab) => (
-          <button
-            key={tab.id}
-            className={`vendor-tab ${activeTab === tab.id ? 'active' : ''}`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
+        <div className="billing-config card">
+          <div className="config-row">
+            <div className="config-item">
+              <label>Select Salon:</label>
+              <select
+                value={selectedSalon || ''}
+                onChange={(e) => {
+                  setSelectedSalon(parseInt(e.target.value))
+                  setSelectedAppointment(null)
+                }}
+              >
+                {salons.map(s => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="config-item">
+              <label>Select Customer/Appointment:</label>
+              <select
+                value={selectedAppointment?.id || ''}
+                onChange={(e) => handleSelectAppointment(e.target.value)}
+              >
+                <option value="">-- Select Customer --</option>
+                {appointments.map(a => (
+                  <option key={a.id} value={a.id}>
+                    {a.user_name || a.guest_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="tab-content card">
-        {activeTab === 'mode' && (
-          <div className="payment-options">
-            <h3>Customer Done - Collect Payment</h3>
-            <button className="payment-btn">Cash</button>
-            <button className="payment-btn">Online (QR)</button>
+      {selectedAppointment ? (
+        <div className="billing-container">
+          <div className="bill-card card" id="printable-bill" ref={billRef}>
+            <div className="bill-header">
+              <h2>{selectedSalonData?.name}</h2>
+              <div className="salon-details">
+                <p>Mobile: {selectedSalonData?.mobile}</p>
+                <p>Pincode: {selectedSalonData?.pincode}</p>
+              </div>
+              <div className="bill-meta">
+                <span>Date: {new Date().toLocaleDateString()}</span>
+                <span>Bill #: {selectedAppointment.id}</span>
+              </div>
+            </div>
+
+            <div className="bill-section customer-section">
+              <h4>Customer Details</h4>
+              <p><strong>Name:</strong> {selectedAppointment.user_name || selectedAppointment.guest_name}</p>
+              {selectedAppointment.guest_mobile && (
+                <p><strong>Mobile:</strong> {selectedAppointment.guest_mobile}</p>
+              )}
+            </div>
+
+            <div className="bill-section services-section">
+              <h4>Services</h4>
+              <table className="bill-table">
+                <thead>
+                  <tr>
+                    <th>Service</th>
+                    <th className="text-right">Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedAppointment.services_details?.map((service, index) => (
+                    <tr key={index}>
+                      <td>{service.name}</td>
+                      <td className="text-right">Rs. {service.price}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th className="text-left">Total</th>
+                    <th className="text-right">Rs. {selectedAppointment.total_amount}</th>
+                  </tr>
+                  {selectedAppointment.payment_status === 'PAID' && (
+                    <tr className="payment-info">
+                      <td colSpan="2" className="text-right">
+                        <span className="paid-badge">PAID via {selectedAppointment.payment_mode}</span>
+                      </td>
+                    </tr>
+                  )}
+                </tfoot>
+              </table>
+            </div>
+
+            <div className="bill-footer">
+              <p>Thank you for visiting {selectedSalonData?.name}!</p>
+            </div>
           </div>
-        )}
-        {activeTab === 'bill' && (
-          <div>
-            <h3>Generate Digital Bill / Invoice</h3>
-            <p>Select customer to view/generate bill</p>
+
+          <div className="billing-actions no-print">
+            {selectedAppointment.payment_status !== 'PAID' ? (
+              <div className="payment-actions card">
+                <h4>Accept Payment</h4>
+                <div className="action-group">
+                  <button
+                    className="btn btn-success"
+                    onClick={() => handleAcceptPayment('Cash')}
+                    disabled={updating}
+                  >
+                    Cash
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => handleAcceptPayment('Online')}
+                    disabled={updating}
+                  >
+                    Online (QR)
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="payment-status-card card">
+                <h4>Payment Received</h4>
+                <p className="paid-success">
+                  Marked as PAID via {selectedAppointment.payment_mode}
+                </p>
+              </div>
+            )}
+
+            <div className="other-actions">
+              <button className="btn btn-outline btn-full" onClick={handlePrint}>
+                Print Bill
+              </button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        !loading && (
+          <div className="empty-state card no-print">
+            <p>Please select a customer to generate a bill.</p>
+          </div>
+        )
+      )}
+
+      {showQR && (
+        <div className="modal-overlay">
+          <div className="qr-modal card">
+            <h3>Scan QR to Pay</h3>
+            <div className="qr-placeholder">
+              <div className="qr-box">
+                <span className="qr-icon">QR</span>
+              </div>
+              <p>UPI ID: salon@{selectedSalonData?.name.toLowerCase().replace(/\s/g, '')}</p>
+              <p className="amount-text">Amount: Rs. {selectedAppointment?.total_amount}</p>
+            </div>
+            <div className="modal-actions">
+              <button className="btn btn-success" onClick={() => handleAcceptPayment('Online')}>
+                Confirm Payment Received
+              </button>
+              <button className="btn btn-outline" onClick={() => setShowQR(false)}>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {loading && <div className="loading-overlay">Loading...</div>}
     </div>
   )
 }

@@ -6,7 +6,7 @@ from services.slot_utils import get_slot_availability
 
 
 @transaction.atomic
-def book_appointment(*, user, salon, appointment_date, slot_start, service_ids=None):
+def book_appointment(*, user=None, salon, appointment_date, slot_start, service_ids=None, guest_name=None, guest_mobile=None):
     """
     Creates an appointment if slot capacity allows. Uses total duration of
     selected services for slot availability (one slot = full service duration).
@@ -16,6 +16,9 @@ def book_appointment(*, user, salon, appointment_date, slot_start, service_ids=N
     # 1. Validate and resolve services
     if not service_ids:
         raise ValidationError("At least one service is required.")
+
+    if not user and (not guest_name or not guest_mobile):
+        raise ValidationError("User or Guest details (name & mobile) are required.")
 
     services = list(
         Service.objects.filter(
@@ -46,6 +49,8 @@ def book_appointment(*, user, salon, appointment_date, slot_start, service_ids=N
     # 3. Create appointment
     appointment = Appointment.objects.create(
         user=user,
+        guest_name=guest_name,
+        guest_mobile=guest_mobile,
         salon=salon,
         appointment_date=appointment_date,
         slot_start=slot_start,

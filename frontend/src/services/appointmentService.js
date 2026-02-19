@@ -44,13 +44,16 @@ const appointmentService = {
     return Array.isArray(data) ? data : (data.results || [])
   },
 
-  async updateAppointmentStatus(id, status) {
-    const response = await api.post(`/appointments/vendor/${id}/update/`, { status })
+  async updateAppointmentStatus(id, status, action = null, extraData = {}) {
+    const payload = { ...extraData }
+    if (status) payload.status = status
+    if (action) payload.action = action
+    const response = await api.post(`/appointments/vendor/${id}/update/`, payload)
     return response.data
   },
 
-  async getSalonQueue(salonId) {
-    const response = await api.get(`/appointments/vendor/queue/${salonId}/`)
+  async checkIn(data) {
+    const response = await api.post('/bookings/check-in/', data)
     return response.data
   },
 }

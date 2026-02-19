@@ -1,8 +1,8 @@
 # AGENTS.md — Project Rules & Guidelines
 
 This document provides a quick reference to the mandatory rules and guidelines for this project.
-For the complete, authoritative rules, see `.cursorrules`.
 
+Do not use emoji in the code comments. 
 ---
 
 ## 🎯 Project Type

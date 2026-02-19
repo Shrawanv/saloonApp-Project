@@ -3,7 +3,8 @@ import api from './api'
 const serviceService = {
   async getServicesBySalon(salonId) {
     const response = await api.get(`/services/salon/${salonId}/`)
-    return response.data
+    const data = response.data
+    return Array.isArray(data) ? data : (data.results || [])
   },
 
   async getServiceById(id) {

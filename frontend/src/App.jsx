@@ -16,6 +16,7 @@ import GuestDashboard from './pages/guest/GuestDashboard'
 import SalonSelect from './pages/customer/SalonSelect'
 import CustomerDashboard from './pages/customer/CustomerDashboard'
 import MyAppointments from './pages/customer/MyAppointments'
+import CustomerProfile from './pages/customer/CustomerProfile'
 
 // Vendor Pages
 import VendorHome from './pages/vendor/VendorHome'
@@ -45,8 +46,8 @@ function App() {
     <Routes>
       <Route path="/" element={
         isAuthenticated() ? (
-          getUserRole() === 'vendor' ? 
-            <Navigate to="/vendor" replace /> : 
+          getUserRole() === 'vendor' ?
+            <Navigate to="/vendor" replace /> :
             <Navigate to="/customer/select-salon" replace />
         ) : (
           <Navigate to="/login" replace />
@@ -71,6 +72,7 @@ function App() {
         <Route path="select-salon" element={<SalonSelect />} />
         <Route path="dashboard/:salonId" element={<CustomerDashboard />} />
         <Route path="appointments" element={<MyAppointments />} />
+        <Route path="profile" element={<CustomerProfile />} />
       </Route>
 
       {/* Vendor Routes */}

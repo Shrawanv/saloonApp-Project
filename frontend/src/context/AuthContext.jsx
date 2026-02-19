@@ -11,7 +11,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     // Ensure CSRF cookie is set for state-changing requests
-    authService.getCsrf().catch(() => {})
+    authService.getCsrf().catch(() => { })
     const storedUser = authService.getStoredUser()
     if (storedUser) {
       setUser(storedUser)
@@ -23,18 +23,18 @@ export function AuthProvider({ children }) {
     try {
       const data = await authService.login(credentials)
       setUser(data.user)
-      
+
       if (data.user.role === 'VENDOR') {
         navigate('/vendor')
       } else {
         navigate('/customer/select-salon')
       }
-      
+
       return { success: true, data }
     } catch (error) {
-      const message = error.response?.data?.detail || 
-                      error.response?.data?.non_field_errors?.[0] ||
-                      'Login failed. Please check your credentials.'
+      const message = error.response?.data?.detail ||
+        error.response?.data?.non_field_errors?.[0] ||
+        'Login failed. Please check your credentials.'
       return { success: false, error: message }
     }
   }
@@ -43,19 +43,19 @@ export function AuthProvider({ children }) {
     try {
       const data = await authService.register(userData)
       setUser(data.user)
-      
+
       if (data.user.role === 'VENDOR') {
         navigate('/vendor')
       } else {
         navigate('/customer/select-salon')
       }
-      
+
       return { success: true, data }
     } catch (error) {
-      const message = error.response?.data?.detail || 
-                      error.response?.data?.username?.[0] ||
-                      error.response?.data?.email?.[0] ||
-                      'Registration failed. Please try again.'
+      const message = error.response?.data?.detail ||
+        error.response?.data?.username?.[0] ||
+        error.response?.data?.email?.[0] ||
+        'Registration failed. Please try again.'
       return { success: false, error: message }
     }
   }
@@ -87,6 +87,7 @@ export function AuthProvider({ children }) {
 
   const value = {
     user,
+    setUser,
     loading,
     login,
     register,

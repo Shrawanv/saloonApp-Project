@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { salonService, serviceService } from '../../services'
+import { salonService, serviceService, appointmentService } from '../../services'
 import './CustomerDashboard.css'
 
 import SalonProfile from '../../components/customer/SalonProfile'
 import LiveQueue from '../../components/customer/LiveQueue'
 import BookSlot from '../../components/customer/BookSlot'
 import PriceList from '../../components/customer/PriceList'
-import RatingSection from '../../components/customer/RatingSection'
 import FeedbackSection from '../../components/customer/FeedbackSection'
 
 const TABS = [
@@ -15,7 +14,6 @@ const TABS = [
   { id: 'queue', label: 'Live Queue', icon: '📋' },
   { id: 'book', label: 'Book Slot', icon: '📅' },
   { id: 'prices', label: 'Price List', icon: '💰' },
-  { id: 'rating', label: 'Rating', icon: '⭐' },
   { id: 'feedback', label: 'Feedback', icon: '💬' },
 ]
 
@@ -27,21 +25,40 @@ function CustomerDashboard() {
   const [services, setServices] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [checkInStatus, setCheckInStatus] = useState({ success: false, message: '' })
 
   useEffect(() => {
     fetchSalonData()
+    handleCheckInFromURL()
   }, [salonId])
+
+  const handleCheckInFromURL = async () => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('checkin') === 'true') {
+      setActiveTab('queue')
+      // Auto-checkin if logged in
+      const user = localStorage.getItem('user')
+      if (user) {
+        try {
+          const res = await appointmentService.checkIn({ salon_id: salonId })
+          setCheckInStatus({ success: true, message: 'Check-in successful! Welcome to ' + (salon?.name || 'the salon') })
+        } catch (err) {
+          setCheckInStatus({ success: false, message: err.response?.data?.detail || 'Check-in failed. Please try again.' })
+        }
+      }
+    }
+  }
 
   const fetchSalonData = async () => {
     try {
       setLoading(true)
       setError('')
-      
+
       const [salonData, servicesData] = await Promise.all([
         salonService.getSalonById(salonId),
         serviceService.getServicesBySalon(salonId)
       ])
-      
+
       setSalon(salonData)
       setServices(servicesData)
     } catch (err) {
@@ -69,13 +86,11 @@ function CustomerDashboard() {
       case 'profile':
         return <SalonProfile salon={salon} />
       case 'queue':
-        return <LiveQueue salonId={salonId} />
+        return <LiveQueue salonId={salonId} onTabChange={setActiveTab} />
       case 'book':
-        return <BookSlot salonId={salonId} services={services} salon={salon} />
+        return <BookSlot salonId={salonId} services={services} salon={salon} onBookingSuccess={setActiveTab} />
       case 'prices':
         return <PriceList services={services} />
-      case 'rating':
-        return <RatingSection salonId={salonId} />
       case 'feedback':
         return <FeedbackSection salonId={salonId} />
       default:
@@ -107,9 +122,15 @@ function CustomerDashboard() {
       <div className="dashboard-header">
         <h1>{salon?.name || 'Salon'}</h1>
         <p>
-          Pincode: {salon?.pincode} • 
+          Pincode: {salon?.pincode} •
           Open: {formatTime(salon?.opening_time)} - {formatTime(salon?.closing_time)}
         </p>
+        {checkInStatus.message && (
+          <div className={`checkin-banner ${checkInStatus.success ? 'success' : 'error'}`}>
+            {checkInStatus.message}
+            <button onClick={() => setCheckInStatus({ success: false, message: '' })}>✕</button>
+          </div>
+        )}
       </div>
 
       <div className="dashboard-tabs">

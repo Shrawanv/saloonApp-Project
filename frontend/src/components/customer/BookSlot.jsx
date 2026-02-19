@@ -71,7 +71,7 @@ function BookSlot({ salonId, services = [], salon }) {
     try {
       setBooking(true)
       setError('')
-      
+
       await appointmentService.createAppointment({
         salon_id: parseInt(salonId),
         appointment_date: selectedDate,
@@ -83,9 +83,13 @@ function BookSlot({ salonId, services = [], salon }) {
       setSelectedServices([])
       setSelectedDate('')
       setSelectedSlot('')
-      
+
       setTimeout(() => {
-        navigate('/customer/appointments')
+        if (onBookingSuccess) {
+          onBookingSuccess('queue')
+        } else {
+          navigate('/customer/appointments')
+        }
       }, 2000)
     } catch (err) {
       console.error('Error creating booking:', err)
@@ -177,7 +181,7 @@ function BookSlot({ salonId, services = [], salon }) {
         )}
       </div>
 
-      <button 
+      <button
         className="btn btn-primary btn-block"
         onClick={handleBooking}
         disabled={booking || selectedServices.length === 0 || !selectedDate || !selectedSlot}

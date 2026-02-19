@@ -89,6 +89,10 @@ USE_TZ = True
 # Static files
 STATIC_URL = "static/"
 
+# Media files
+MEDIA_URL = "media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
 # Secure defaults (overridden in dev.py / prod.py)
 DEBUG = False
 ALLOWED_HOSTS = []
