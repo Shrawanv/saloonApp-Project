@@ -4,7 +4,7 @@ import { salonService, appointmentService } from '../../services'
 import { useAuth } from '../../context/AuthContext'
 import './BookSlot.css'
 
-function BookSlot({ salonId, services = [], salon }) {
+function BookSlot({ salonId, services = [], salon, onBookingSuccess }) {
   const navigate = useNavigate()
   const { isAuthenticated } = useAuth()
   const [selectedServices, setSelectedServices] = useState([])

@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 
 from salons.models import Salon
+from bookings.models import Appointment
 from api.serializers import BookAppointmentSerializer, AppointmentSerializer
 from api.permissions import IsCustomer
 
@@ -70,11 +71,25 @@ class MyAppointmentsAPIView(APIView):
         # Auto-cancel past bookings for this user
         Appointment.cancel_expired_appointments(user=request.user)
         
-        qs = request.user.appointments.select_related("salon").prefetch_related("services").order_by("-appointment_date", "-slot_start")
+        qs = request.user.appointments.select_related("salon").prefetch_related("services")
+        
+        req_type = request.query_params.get('type')
+        today = date.today()
+        
+        if req_type == 'upcoming':
+            qs = qs.filter(appointment_date__gte=today, status='BOOKED')
+        elif req_type == 'past':
+            # Past is either explicitly cancelled/completed, or booked in the past (though cancel_expired should catch them)
+            from django.db.models import Q
+            qs = qs.filter(Q(status__in=['COMPLETED', 'CANCELLED']) | Q(appointment_date__lt=today))
+            
+        qs = qs.order_by("-appointment_date", "-slot_start")
+        
         paginator = BookingListPagination()
         page = paginator.paginate_queryset(qs, request)
         if page is not None:
             ser = AppointmentSerializer(page, many=True)
             return paginator.get_paginated_response(ser.data)
+        
         ser = AppointmentSerializer(qs, many=True)
         return Response({"results": ser.data}, status=status.HTTP_200_OK)

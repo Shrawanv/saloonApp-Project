@@ -95,6 +95,8 @@ class VendorServiceCreateSerializer(serializers.Serializer):
 class AppointmentSerializer(serializers.ModelSerializer):
     salon_name = serializers.CharField(source="salon.name", read_only=True)
     services_details = ServiceSerializer(source="services", many=True, read_only=True)
+    services_names = serializers.SerializerMethodField()
+    total_price = serializers.DecimalField(source="total_amount", max_digits=10, decimal_places=2, read_only=True)
     user_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -111,8 +113,10 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "slot_start",
             "status",
             "total_amount",
+            "total_price",
             "duration_minutes",
             "services",
+            "services_names",
             "services_details",
             "checked_in_at",
             "payment_status",
@@ -125,6 +129,9 @@ class AppointmentSerializer(serializers.ModelSerializer):
         if obj.user:
             return obj.user.get_full_name() or obj.user.username
         return obj.guest_name
+
+    def get_services_names(self, obj):
+        return [s.name for s in obj.services.all()]
 
 
 class LoginSerializer(serializers.Serializer):
