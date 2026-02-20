@@ -157,16 +157,7 @@
   color: var(--color-text);
 }
 
-.contact-info {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #eee;
-}
 
-.contact-info p {
-  margin-bottom: 0.5rem;
-  font-size: 0.95rem;
-}
 
 /* Sidebar Reviews */
 .salon-reviews-sidebar {

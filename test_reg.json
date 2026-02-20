@@ -1,0 +1,11 @@
+{
+    "username": "testuser02",
+    "email": "test02@example.com",
+    "password": "password123",
+    "password_confirm": "password123",
+    "first_name": "Test",
+    "last_name": "User",
+    "mobile": "1234567890",
+    "pincode": "123456",
+    "role": "CUSTOMER"
+}

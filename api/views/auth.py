@@ -138,3 +138,22 @@ class RegisterView(APIView):
         )
         set_jwt_cookies(response, str(refresh.access_token), str(refresh))
         return response
+
+
+class ChangePasswordView(APIView):
+    """POST: authenticated password update."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        from api.serializers import ChangePasswordSerializer
+        ser = ChangePasswordSerializer(data=request.data)
+        if not ser.is_valid():
+            return Response(ser.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        user = request.user
+        if not user.check_password(ser.validated_data["old_password"]):
+            return Response({"old_password": "Wrong old password."}, status=status.HTTP_400_BAD_REQUEST)
+        
+        user.set_password(ser.validated_data["new_password"])
+        user.save()
+        return Response({"detail": "Password updated successfully."}, status=status.HTTP_200_OK)

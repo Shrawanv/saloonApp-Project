@@ -34,6 +34,18 @@ class Salon(models.Model):
     def reviews_count(self):
         return self.reviews.count()
 
+    @property
+    def services_count(self):
+        return self.services.filter(is_active=True).count()
+
+    @property
+    def queue_length(self):
+        from datetime import date
+        return self.appointments.filter(
+            appointment_date=date.today(),
+            status="BOOKED"
+        ).count()
+
 class SalonMedia(models.Model):
     salon = models.ForeignKey(Salon, on_delete=models.CASCADE, related_name="media")
     file = models.FileField(upload_to="salon_gallery/")

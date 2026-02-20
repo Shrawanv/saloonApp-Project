@@ -126,11 +126,20 @@
   width: 56px;
   height: 56px;
   background: var(--color-primary-light);
-  border-radius: var(--radius-sm);
+  border-radius: 50%;
+  /* Changed to circle */
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
+  overflow: hidden;
+  /* Added to clip image */
+}
+
+.salon-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .salon-info {

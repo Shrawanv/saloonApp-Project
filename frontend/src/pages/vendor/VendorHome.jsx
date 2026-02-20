@@ -19,14 +19,20 @@ function VendorHome() {
     try {
       setLoading(true)
       setError('')
-      
+
       const [salonsData, appointmentsData] = await Promise.all([
         salonService.getMySalons(),
         appointmentService.getVendorAppointments({
-          date: new Date().toISOString().split('T')[0]
+          date: (() => {
+            const now = new Date()
+            const y = now.getFullYear()
+            const m = String(now.getMonth() + 1).padStart(2, '0')
+            const d = String(now.getDate()).padStart(2, '0')
+            return `${y}-${m}-${d}`
+          })()
         })
       ])
-      
+
       setSalons(salonsData)
       setTodayAppointments(appointmentsData)
     } catch (err) {
@@ -39,6 +45,7 @@ function VendorHome() {
 
   const queueLength = todayAppointments.filter(a => a.status === 'BOOKED').length
   const completedToday = todayAppointments.filter(a => a.status === 'COMPLETED').length
+  const cancelledToday = todayAppointments.filter(a => a.status === 'CANCELLED').length
   const totalBookings = todayAppointments.length
 
   if (loading) {
@@ -70,20 +77,20 @@ function VendorHome() {
         <>
           <div className="charts-grid">
             <div className="chart-placeholder card">
-              <h4>Queue Length</h4>
+              <h3>Queue Length</h3>
               <p className="chart-value">{queueLength}</p>
             </div>
             <div className="chart-placeholder card">
-              <h4>Completed Today</h4>
+              <h3>Completed Today</h3>
               <p className="chart-value">{completedToday}</p>
             </div>
             <div className="chart-placeholder card">
-              <h4>Total Bookings</h4>
-              <p className="chart-value">{totalBookings}</p>
+              <h3>Cancelled Today</h3>
+              <p className="chart-value">{cancelledToday}</p>
             </div>
             <div className="chart-placeholder card">
-              <h4>My Salons</h4>
-              <p className="chart-value">{salons.length}</p>
+              <h3>Total Bookings</h3>
+              <p className="chart-value">{totalBookings}</p>
             </div>
           </div>
 

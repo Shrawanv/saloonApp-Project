@@ -32,9 +32,15 @@ export function AuthProvider({ children }) {
 
       return { success: true, data }
     } catch (error) {
-      const message = error.response?.data?.detail ||
-        error.response?.data?.non_field_errors?.[0] ||
-        'Login failed. Please check your credentials.'
+      let message = 'Login failed. Please check your credentials.'
+      if (error.response?.data) {
+        const data = error.response.data
+        if (data.detail) {
+          message = data.detail
+        } else if (typeof data === 'object' && data.non_field_errors) {
+          message = data.non_field_errors[0]
+        }
+      }
       return { success: false, error: message }
     }
   }
@@ -52,10 +58,22 @@ export function AuthProvider({ children }) {
 
       return { success: true, data }
     } catch (error) {
-      const message = error.response?.data?.detail ||
-        error.response?.data?.username?.[0] ||
-        error.response?.data?.email?.[0] ||
-        'Registration failed. Please try again.'
+      let message = 'Registration failed. Please try again.'
+      if (error.response?.data) {
+        const data = error.response.data
+        if (data.detail) {
+          message = data.detail
+        } else if (typeof data === 'object') {
+          // If it's a validation error object, join the messages
+          const errorMessages = Object.entries(data).map(([field, msgs]) => {
+            const fieldName = field.charAt(0).toUpperCase() + field.slice(1).replace('_', ' ')
+            return `${fieldName}: ${Array.isArray(msgs) ? msgs.join(', ') : msgs}`
+          })
+          if (errorMessages.length > 0) {
+            message = errorMessages.join(' | ')
+          }
+        }
+      }
       return { success: false, error: message }
     }
   }

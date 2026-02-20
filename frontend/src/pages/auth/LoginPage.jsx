@@ -6,7 +6,6 @@ import './LoginPage.css'
 function LoginPage() {
   const { login, register } = useAuth()
   const [mode, setMode] = useState('login')
-  const [userType, setUserType] = useState('customer')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -30,7 +29,7 @@ function LoginPage() {
     setError('')
 
     const result = await login({ username, password })
-    
+
     if (!result.success) {
       setError(result.error)
     }
@@ -50,11 +49,11 @@ function LoginPage() {
 
     const userData = {
       ...regData,
-      role: userType.toUpperCase(),
+      role: 'CUSTOMER',
     }
 
     const result = await register(userData)
-    
+
     if (!result.success) {
       setError(result.error)
     }
@@ -71,21 +70,6 @@ function LoginPage() {
         <div className="login-header">
           <h1>✂️ SaloQ</h1>
           <p>Book slots & manage your salon visits</p>
-        </div>
-
-        <div className="user-type-tabs">
-          <button
-            className={`tab ${userType === 'customer' ? 'active' : ''}`}
-            onClick={() => setUserType('customer')}
-          >
-            Customer
-          </button>
-          <button
-            className={`tab ${userType === 'vendor' ? 'active' : ''}`}
-            onClick={() => setUserType('vendor')}
-          >
-            Vendor
-          </button>
         </div>
 
         {error && <div className="error-message">{error}</div>}
@@ -114,8 +98,8 @@ function LoginPage() {
                 disabled={loading}
               />
             </div>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn btn-primary btn-block"
               disabled={loading}
             >
@@ -216,12 +200,12 @@ function LoginPage() {
                 disabled={loading}
               />
             </div>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn btn-primary btn-block"
               disabled={loading}
             >
-              {loading ? 'Creating account...' : `Register as ${userType === 'vendor' ? 'Vendor' : 'Customer'}`}
+              {loading ? 'Creating account...' : 'Register as Customer'}
             </button>
           </form>
         )}
@@ -236,9 +220,6 @@ function LoginPage() {
           >
             {mode === 'login' ? "Don't have an account? Register" : 'Already have an account? Login'}
           </button>
-          <Link to="/guest/select-salon" className="guest-browse-btn">
-            👀 Browse as Guest — view services without login
-          </Link>
         </div>
       </div>
     </div>

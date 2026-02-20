@@ -109,11 +109,11 @@ Before marking tasks complete, verify:
 - [ ] Permissions & roles are correct
 - [ ] Performance rules are respected
 - [ ] `docs/api_endpoints.md` is updated
-- [ ] `.cursorrules` requirements are met
+- [ ] `AGENTS.md` requirements are met
 
 ---
 
 ## 🔗 Related Files
-- `.cursorrules` — Authoritative rules (READ FIRST)
+- `AGENTS.md` — Authoritative rules (READ FIRST)
 - `docs/api_endpoints.md` — API inventory
 - `urls.py` — Actual registered endpoints

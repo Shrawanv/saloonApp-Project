@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "username", "first_name", "last_name", "role", "mobile", "pincode", "profile_picture")
+        fields = ("id", "username", "email", "first_name", "last_name", "role", "mobile", "pincode", "profile_picture")
         read_only_fields = ("id", "username", "role")
 
 
@@ -23,6 +23,18 @@ class CustomerProfileUpdateSerializer(serializers.Serializer):
     last_name = serializers.CharField(required=False, max_length=150, allow_blank=True)
     mobile = serializers.CharField(required=False, max_length=15)
     pincode = serializers.CharField(required=False, max_length=10)
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    """POST /api/auth/change-password/."""
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, min_length=6)
+    confirm_password = serializers.CharField(required=True)
+
+    def validate(self, attrs):
+        if attrs["new_password"] != attrs["confirm_password"]:
+            raise serializers.ValidationError({"confirm_password": "New passwords do not match."})
+        return attrs
 
 
 class SalonMediaSerializer(serializers.ModelSerializer):
@@ -51,10 +63,12 @@ class SalonSerializer(serializers.ModelSerializer):
             "is_active",
             "average_rating",
             "reviews_count",
+            "services_count",
+            "queue_length",
             "logo",
             "media",
         )
-        read_only_fields = ("id", "average_rating", "reviews_count", "media")
+        read_only_fields = ("id", "average_rating", "reviews_count", "services_count", "queue_length", "media")
 
 
 class VendorSalonCreateUpdateSerializer(serializers.Serializer):

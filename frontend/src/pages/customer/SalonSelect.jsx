@@ -31,7 +31,7 @@ function SalonSelect() {
     try {
       setLoading(true)
       setError('')
-      const data = searchQuery 
+      const data = searchQuery
         ? await salonService.searchSalons(searchQuery)
         : await salonService.getSalons()
       setSalons(data)
@@ -43,14 +43,23 @@ function SalonSelect() {
     }
   }
 
+  const formatTime = (timeStr) => {
+    if (!timeStr) return ''
+    const [hours, minutes] = timeStr.split(':')
+    const h = parseInt(hours)
+    const ampm = h >= 12 ? 'PM' : 'AM'
+    const formattedHours = h % 12 || 12
+    return `${formattedHours}:${minutes} ${ampm}`
+  }
+
   const isSalonOpen = (salon) => {
     if (!salon.is_active) return false
-    
+
     const now = new Date()
     const currentTime = now.toTimeString().slice(0, 5)
-    
-    return currentTime >= salon.opening_time?.slice(0, 5) && 
-           currentTime <= salon.closing_time?.slice(0, 5)
+
+    return currentTime >= salon.opening_time?.slice(0, 5) &&
+      currentTime <= salon.closing_time?.slice(0, 5)
   }
 
   return (
@@ -84,11 +93,11 @@ function SalonSelect() {
 
       <div className="salon-list">
         <h3>Available Salons</h3>
-        
+
         {loading && <div className="loading-state">Loading salons...</div>}
-        
+
         {error && <div className="error-state">{error}</div>}
-        
+
         {!loading && !error && salons.length === 0 && (
           <div className="empty-state">
             {search ? `No salons found for "${search}"` : 'No salons available'}
@@ -97,22 +106,30 @@ function SalonSelect() {
 
         {!loading && salons.map((salon) => {
           const isOpen = isSalonOpen(salon)
+          const logoUrl = salon.logo ? (salon.logo.startsWith('http') ? salon.logo : `http://localhost:8000${salon.logo}`) : null
+
           return (
             <div
               key={salon.id}
               className="salon-card card"
               onClick={() => navigate(`/customer/dashboard/${salon.id}`)}
             >
-              <div className="salon-avatar">✂️</div>
+              <div className="salon-avatar">
+                {logoUrl ? (
+                  <img src={logoUrl} alt={salon.name} className="salon-logo-img" />
+                ) : (
+                  '✂️'
+                )}
+              </div>
               <div className="salon-info">
                 <h4>{salon.name}</h4>
                 <p className="salon-address">Pincode: {salon.pincode}</p>
                 <div className="salon-meta">
                   <span className="services-count">
-                    {salon.services_count || 0} services
+                    {salon.services_count || 0} {salon.services_count === 1 ? 'service' : 'services'}
                   </span>
                   <span className={`status ${isOpen ? 'open' : 'closed'}`}>
-                    {isOpen ? 'Open' : 'Closed'}
+                    {isOpen ? 'Open' : 'Closed'} • {formatTime(salon.opening_time)} - {formatTime(salon.closing_time)}
                   </span>
                   {isOpen && salon.queue_length > 0 && (
                     <span className="queue">Queue: {salon.queue_length}</span>
