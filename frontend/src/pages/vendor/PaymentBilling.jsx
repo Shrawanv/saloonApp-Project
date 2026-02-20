@@ -14,34 +14,57 @@ function PaymentBilling() {
   const billRef = useRef()
 
   useEffect(() => {
-    fetchSalons()
+    const initData = async () => {
+      try {
+        setLoading(true)
+        const salonsData = await salonService.getMySalons()
+        setSalons(salonsData)
+        if (salonsData.length > 0) {
+          const salonId = salonsData[0].id
+          setSelectedSalon(salonId)
+          // Fetch appointments for the first salon immediately to avoid double loading state
+          const aptsData = await appointmentService.getVendorAppointments({
+            salon: salonId,
+            status: 'COMPLETED',
+            page_size: 50
+          })
+          setAppointments(aptsData)
+        }
+      } catch (err) {
+        console.error('Error initializing data:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    initData()
   }, [])
 
+  // This second effect now only handles manual salon changes, not the initial mount
+  const isFirstRun = useRef(true)
   useEffect(() => {
+    if (isFirstRun.current) {
+      isFirstRun.current = false
+      return
+    }
     if (selectedSalon) {
       fetchRecentAppointments()
     }
   }, [selectedSalon])
 
   const fetchSalons = async () => {
+    // Kept for manual refresh if needed, but primary init is now in useEffect
     try {
-      setLoading(true)
       const data = await salonService.getMySalons()
       setSalons(data)
-      if (data.length > 0) {
-        setSelectedSalon(data[0].id)
-      }
     } catch (err) {
       console.error('Error fetching salons:', err)
-    } finally {
-      setLoading(false)
     }
   }
 
   const fetchRecentAppointments = async () => {
     try {
       setLoading(true)
-      // Fetch only COMPLETED appointments for billing
       const data = await appointmentService.getVendorAppointments({
         salon: selectedSalon,
         status: 'COMPLETED',
@@ -149,7 +172,9 @@ function PaymentBilling() {
         </div>
       </div>
 
-      {selectedAppointment ? (
+      {loading ? (
+        <div className="loading-state">Loading billing data...</div>
+      ) : selectedAppointment ? (
         <div className="billing-container">
           <div className="bill-card card" id="printable-bill" ref={billRef}>
             <div className="bill-header">
@@ -278,7 +303,6 @@ function PaymentBilling() {
         </div>
       )}
 
-      {loading && <div className="loading-overlay">Loading...</div>}
     </div>
   )
 }
