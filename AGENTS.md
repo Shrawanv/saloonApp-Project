@@ -102,13 +102,30 @@ Do not use emoji in the code comments.
 
 ---
 
+## 🎨 Frontend Design Rules (Non-Negotiable)
+
+**Single Source of Truth:** `docs/DESIGN_RULES.md`
+
+Every new page, component, or feature MUST:
+- Use only CSS variables from `frontend/src/styles/index.css` — no hardcoded colors
+- Follow the **segmented pill tab bar** pattern for all tab navigation
+- Use the **stat card grid** pattern (`stats-grid` + `stat-card`) for all dashboard metrics
+- Use **card rows** (not `<table>`) for entity lists
+- Use inline `error-message` / `success-message` banners — never `alert()`
+- Include an **empty state** for every list that can be empty
+- Use the **blur-overlay modal** pattern for all dialogs
+- Read the full rules in `docs/DESIGN_RULES.md` before implementing any UI
+
+---
+
 ## ✅ Task Completion Checklist
 
 Before marking tasks complete, verify:
 - [ ] APIs work as intended
 - [ ] Permissions & roles are correct
 - [ ] Performance rules are respected
-- [ ] `docs/api_endpoints.md` is updated
+- [ ] `docs/api_endpoints.md` is updated (for any API changes)
+- [ ] `docs/DESIGN_RULES.md` is followed (for any UI changes)
 - [ ] `AGENTS.md` requirements are met
 
 ---
@@ -116,4 +133,5 @@ Before marking tasks complete, verify:
 ## 🔗 Related Files
 - `AGENTS.md` — Authoritative rules (READ FIRST)
 - `docs/api_endpoints.md` — API inventory
+- `docs/DESIGN_RULES.md` — Frontend design rules (READ FOR ALL UI WORK)
 - `urls.py` — Actual registered endpoints

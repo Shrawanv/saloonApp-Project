@@ -1,8 +1,6 @@
 /* ─ Page Shell ─────────────────────────────────────── */
 .vendor-profile-page {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 1.5rem 1rem 3rem;
+  /* no max-width — fills vendor-content area like VendorHome */
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
@@ -82,7 +80,8 @@
   transform: translateY(-1px);
 }
 
-/* ─ Tabs ────────────────────────────────────────────── */
+/* ─ Tabs — alias to global .profile-tabs / .profile-tab ─ */
+/* Use class="vendor-tabs profile-tabs" + "vendor-tab profile-tab" in JSX */
 .vendor-tabs {
   display: flex;
   gap: 0.5rem;
@@ -101,6 +100,7 @@
   color: var(--color-text-muted);
   font-weight: 600;
   font-size: 0.9rem;
+  /* §2 muted/hint */
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -108,11 +108,11 @@
 .vendor-tab.active {
   background: var(--color-primary);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(var(--color-primary-rgb), 0.35);
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.35);
 }
 
 .vendor-tab:not(.active):hover {
-  background: rgba(var(--color-primary-rgb), 0.06);
+  background: rgba(168, 85, 247, 0.06);
   color: var(--color-primary);
 }
 
@@ -121,7 +121,7 @@
   padding: 2rem;
 }
 
-/* ─ Section Header ──────────────────────────────────── */
+/* ─ Section Header (aliases global .section-header) ── */
 .vp-section-header {
   display: flex;
   justify-content: space-between;
@@ -130,17 +130,18 @@
 }
 
 .vp-section-header h3 {
-  margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+  /* §2 h3 — section title */
   font-weight: 700;
-  color: var(--color-text);
+  margin: 0;
 }
+
 
 .vp-count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: rgba(var(--color-primary-rgb), 0.1);
+  background: rgba(168, 85, 247, 0.1);
   color: var(--color-primary);
   font-size: 0.75rem;
   font-weight: 700;
@@ -178,11 +179,12 @@
   color: var(--color-text);
 }
 
-/* ─ Status Badge ─────────────────────────────────────── */
+/* ─ Status Badge (uses global .status-badge) ─ */
+/* .vp-status-badge kept for backward compat */
 .vp-status-badge {
   display: inline-block;
   padding: 0.22rem 0.65rem;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -191,11 +193,13 @@
 .vp-status-badge.active {
   background: #dcfce7;
   color: #15803d;
+  border: 1px solid #bbf7d0;
 }
 
 .vp-status-badge.inactive {
-  background: #fee2e2;
-  color: #dc2626;
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
+  border: 1px solid var(--color-error-border);
 }
 
 /* ─ Edit Form ────────────────────────────────────────── */
@@ -203,10 +207,10 @@
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  background: #f8fafc;
+  background: var(--color-bg-secondary);
   padding: 1.75rem;
   border-radius: var(--radius);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border);
 }
 
 .form-row {
@@ -240,10 +244,10 @@
 .form-group select {
   width: 100%;
   padding: 0.7rem 0.85rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-size: 0.95rem;
-  background: #fff;
+  background: var(--color-card);
   color: var(--color-text);
   transition: all 0.2s;
   box-sizing: border-box;
@@ -253,7 +257,7 @@
 .form-group select:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.12);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
 .vp-form-actions {
@@ -261,7 +265,7 @@
   justify-content: flex-end;
   gap: 0.75rem;
   padding-top: 0.5rem;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid var(--color-border);
   margin-top: 0.5rem;
 }
 
@@ -277,16 +281,16 @@
   justify-content: space-between;
   align-items: center;
   padding: 1rem 1.25rem;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
   border-radius: var(--radius);
   transition: all 0.2s;
   gap: 1rem;
 }
 
 .service-card:hover {
-  border-color: rgba(var(--color-primary-rgb), 0.3);
-  box-shadow: 0 2px 12px rgba(var(--color-primary-rgb), 0.08);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-primary-light);
   transform: translateY(-1px);
 }
 
@@ -341,7 +345,7 @@
 
 .btn.btn-outline {
   background: transparent;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border);
   color: var(--color-text);
   font-size: 0.82rem;
   padding: 0.3rem 0.7rem;
@@ -354,51 +358,38 @@
 .btn.btn-outline:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
-  background: rgba(var(--color-primary-rgb), 0.04);
+  background: var(--color-primary-lightest);
 }
 
 .btn.btn-outline.danger:hover {
-  border-color: #dc2626;
-  color: #dc2626;
-  background: #fee2e2;
+  border-color: var(--color-error);
+  color: var(--color-error);
+  background: var(--color-error-bg);
 }
 
-/* ─ States ───────────────────────────────────────────── */
+/* ─ States — use global .empty-state from index.css ─ */
+/* .vp-empty-state kept as alias for backward compat */
 .vp-empty-state {
   text-align: center;
   padding: 3rem 1rem;
   color: var(--color-text-muted);
   font-size: 1rem;
-  background: #f8fafc;
+  background: var(--color-bg-secondary);
   border-radius: var(--radius);
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--color-border);
 }
 
 .vp-warning {
-  background: #fef9c3;
-  color: #92400e;
+  background: var(--color-warning-bg);
+  color: var(--color-warning-text);
   padding: 0.75rem 1rem;
   border-radius: var(--radius-sm);
   margin-bottom: 1.25rem;
   font-size: 0.9rem;
-  border: 1px solid #fde68a;
+  border: 1px solid var(--color-warning-border);
 }
 
-.error-message {
-  background: #fee2e2;
-  color: #dc2626;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid #fecaca;
-}
-
-.success-message {
-  background: #dcfce7;
-  color: #15803d;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid #bbf7d0;
-}
+/* .error-message and .success-message are GLOBAL — removed duplicates */
 
 /* ─ Password Modal ───────────────────────────────────── */
 .modal-overlay {
@@ -414,21 +405,24 @@
 }
 
 .modal-content {
-  background: #fff;
+  background: var(--color-card);
   padding: 2.5rem;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   width: 90%;
   max-width: 440px;
-  box-shadow: var(--shadow-xl);
+  /* §3 modal max-width */
+  box-shadow: var(--shadow-lg);
   animation: vpSlideUp 0.25s ease-out;
   text-align: left;
 }
 
 .modal-content h3 {
   margin: 0 0 2rem;
-  font-size: 1.4rem;
+  font-size: 1.1rem;
+  /* §2 h3 — section title */
   font-weight: 700;
   text-align: center;
+  color: var(--color-text);
 }
 
 .modal-content .form-group {

@@ -3,22 +3,50 @@
   --color-primary: #a855f7;
   --color-primary-dark: #7c3aed;
   --color-primary-light: #e9d5ff;
+  --color-primary-lightest: rgba(168, 85, 247, 0.04);
   --color-accent: #1e1b4b;
   --color-bg: #faf5ff;
+  --color-bg-secondary: #f8fafc;
   --color-card: #ffffff;
   --color-text: #1e1b4b;
   --color-text-muted: #6b7280;
+  --color-border: #e2e8f0;
+  --color-border-muted: #cbd5e1;
+
+  /* Status semantic tokens */
   --color-success: #10b981;
+  --color-success-bg: #dcfce7;
+  --color-success-text: #15803d;
+  --color-success-border: #bbf7d0;
+
   --color-warning: #f59e0b;
+  --color-warning-bg: #fef9c3;
+  --color-warning-text: #92400e;
+  --color-warning-border: #fde68a;
+
   --color-error: #ef4444;
+  --color-error-bg: #fee2e2;
+  --color-error-text: #dc2626;
+  --color-error-border: #fecaca;
+
+  /* Shadows */
   --shadow-sm: 0 1px 2px rgba(30, 27, 75, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(30, 27, 75, 0.08), 0 2px 4px -2px rgba(30, 27, 75, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(30, 27, 75, 0.1), 0 4px 6px -4px rgba(30, 27, 75, 0.08);
+  --shadow-xl: 0 20px 40px -8px rgba(30, 27, 75, 0.15), 0 8px 16px -4px rgba(30, 27, 75, 0.1);
   --shadow-hover: 0 20px 25px -5px rgba(30, 27, 75, 0.1), 0 8px 10px -6px rgba(30, 27, 75, 0.08);
   --shadow-glow: 0 0 24px rgba(168, 85, 247, 0.25);
+  --shadow-primary-light: 0 2px 12px rgba(168, 85, 247, 0.1);
+
+  /* Focus / interactive */
   --color-focus-ring: rgba(168, 85, 247, 0.25);
+
+  /* Radii */
   --radius: 12px;
   --radius-sm: 8px;
+  --radius-lg: 16px;
+
+  /* Easings */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
   --transition-fast: 0.2s var(--ease-out-expo);
@@ -128,4 +156,190 @@ button {
   padding: 0.75rem 1.5rem;
   color: rgba(255, 255, 255, 0.85);
   transition: all var(--transition-smooth);
+}
+
+/* ─── Additional button variants ────────────────────── */
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid #e2e8f0;
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.btn-danger {
+  background: var(--color-error);
+  color: #fff;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #dc2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+
+.btn-sm {
+  padding: 0.45rem 0.9rem;
+  font-size: 0.82rem;
+}
+
+/* ─── Page header (consistent across all vendor/customer pages) ── */
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 0.25rem;
+}
+
+.page-header p {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+/* ─── Section header (inside cards) ─────────────────── */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.section-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+/* ─── Status badges ──────────────────────────────────── */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge.booked,
+.status-badge.confirmed,
+.status-badge.active {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.status-badge.completed {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+.status-badge.cancelled,
+.status-badge.inactive {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.status-badge.pending {
+  background: #fef9c3;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+/* ─── Empty state ────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--color-text-muted);
+  background: #f8fafc;
+  border-radius: var(--radius);
+  border: 1px dashed #cbd5e1;
+}
+
+.empty-state p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* ─── Feedback banners ───────────────────────────────── */
+.error-message {
+  background: #fee2e2;
+  color: #dc2626;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid #fecaca;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.success-message {
+  background: #dcfce7;
+  color: #15803d;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid #bbf7d0;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+/* ─── Loading / error states ─────────────────────────── */
+.loading-state {
+  text-align: center;
+  padding: 2rem;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.error-state {
+  text-align: center;
+  padding: 1.5rem;
+  color: #dc2626;
+  background: #fee2e2;
+  border-radius: var(--radius);
+  border: 1px solid #fecaca;
+  margin-bottom: 1rem;
+}
+
+/* ─── Segmented pill tabs (canonical tab bar) ────────── */
+.profile-tabs {
+  display: flex;
+  gap: 0.5rem;
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  padding: 0.35rem;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1.5rem;
+}
+
+.profile-tab {
+  flex: 1;
+  padding: 0.6rem 1.2rem;
+  border-radius: calc(var(--radius) - 2px);
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s var(--ease-out-expo);
+  white-space: nowrap;
+}
+
+.profile-tab.active {
+  background: var(--color-primary);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.35);
+}
+
+.profile-tab:not(.active):hover {
+  background: rgba(168, 85, 247, 0.06);
+  color: var(--color-primary);
 }

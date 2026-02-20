@@ -2,23 +2,25 @@ import { useState } from 'react'
 import './SettingsSupport.css'
 
 const SETTINGS_TABS = [
-  { id: 'language', label: 'Language Preferences' },
   { id: 'support', label: 'Support / Raise Ticket' },
   { id: 'faq', label: 'FAQs / Help' },
 ]
 
 function SettingsSupport() {
-  const [activeTab, setActiveTab] = useState('language')
+  const [activeTab, setActiveTab] = useState('support')
 
   return (
     <div className="settings-support-page">
-      <h1>Settings & Support</h1>
+      <div className="page-header">
+        <h1>Settings &amp; Support</h1>
+        <p>Get help or raise a support ticket</p>
+      </div>
 
-      <div className="vendor-tabs">
+      <div className="profile-tabs">
         {SETTINGS_TABS.map((tab) => (
           <button
             key={tab.id}
-            className={`vendor-tab ${activeTab === tab.id ? 'active' : ''}`}
+            className={`profile-tab ${activeTab === tab.id ? 'active' : ''}`}
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.label}
@@ -27,18 +29,16 @@ function SettingsSupport() {
       </div>
 
       <div className="tab-content card">
-        {activeTab === 'language' && <p>Select language (placeholder for translations)</p>}
         {activeTab === 'support' && (
-          <div>
-            <h3>Raise a Ticket</h3>
-            <select>
-              <option>Select issue type</option>
-            </select>
-            <textarea placeholder="Enter details..."></textarea>
-            <button className="btn btn-primary">Submit</button>
+          <div className="empty-state">
+            <p>🎫 Support ticket submission — coming soon!</p>
           </div>
         )}
-        {activeTab === 'faq' && <p>FAQs and Help topics</p>}
+        {activeTab === 'faq' && (
+          <div className="empty-state">
+            <p>❓ FAQs and help topics — coming soon!</p>
+          </div>
+        )}
       </div>
     </div>
   )

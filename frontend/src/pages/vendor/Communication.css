@@ -1,3 +1,4 @@
-.communication-page h1 {
-  margin-bottom: 1.5rem;
+/* Communication.css */
+.communication-page {
+  /* no max-width — fills vendor-content area like VendorHome */
 }

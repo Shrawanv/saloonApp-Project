@@ -58,7 +58,7 @@ function VendorHome() {
 
   return (
     <div className="vendor-home">
-      <div className="vendor-home-header">
+      <div className="page-header">
         <h1>Welcome back, {user?.first_name || user?.username || 'Owner'}</h1>
         <p>{salons.length > 0 ? salons[0].name : 'No salon registered yet'}</p>
       </div>
@@ -75,22 +75,22 @@ function VendorHome() {
         </div>
       ) : (
         <>
-          <div className="charts-grid">
-            <div className="chart-placeholder card">
-              <h3>Queue Length</h3>
-              <p className="chart-value">{queueLength}</p>
+          <div className="stats-grid">
+            <div className="stat-card card">
+              <h4>Queue Length</h4>
+              <p className="stat-value">{queueLength}</p>
             </div>
-            <div className="chart-placeholder card">
-              <h3>Completed Today</h3>
-              <p className="chart-value">{completedToday}</p>
+            <div className="stat-card card">
+              <h4>Completed Today</h4>
+              <p className="stat-value">{completedToday}</p>
             </div>
-            <div className="chart-placeholder card">
-              <h3>Cancelled Today</h3>
-              <p className="chart-value">{cancelledToday}</p>
+            <div className="stat-card card">
+              <h4>Cancelled Today</h4>
+              <p className="stat-value">{cancelledToday}</p>
             </div>
-            <div className="chart-placeholder card">
-              <h3>Total Bookings</h3>
-              <p className="chart-value">{totalBookings}</p>
+            <div className="stat-card card">
+              <h4>Total Bookings</h4>
+              <p className="stat-value">{totalBookings}</p>
             </div>
           </div>
 

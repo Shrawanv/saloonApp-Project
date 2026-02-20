@@ -1,118 +1,121 @@
+/* PaymentBilling.css — all colors use CSS variables; global utilities from index.css */
+/* .empty-state, .loading-state, .error-message, .success-message are global */
+
 .payment-billing-page {
-  max-width: 900px;
-  margin: 0 auto;
+  /* no max-width — fills vendor-content area like VendorHome */
 }
 
+/* ─ Config card ─ */
 .billing-config {
   margin-bottom: 2rem;
-  padding: 1.5rem;
 }
 
 .config-row {
-  display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* §3 — 2-col form row */
+  gap: 1.25rem;
 }
 
 .config-item {
-  flex: 1;
-  min-width: 250px;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.action-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.action-group .btn {
-  padding: 1rem;
-  font-size: 1rem;
-  font-weight: 600;
-}
-
 .config-item label {
-  font-weight: 600;
+  font-size: 0.82rem;
+  /* §2 label/caption */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--color-primary-dark);
 }
 
 .config-item select {
-  padding: 0.6rem;
-  border: 2px solid #eee;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid #cbd5e1;
   border-radius: var(--radius-sm);
   font-size: 1rem;
+  background: var(--color-card);
+  color: var(--color-text);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.billing-actions {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+.config-item select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
+/* ─ Bill layout ─ */
 .billing-container {
   display: flex;
   gap: 2rem;
-  max-width: 1000px;
-  margin: 0 auto;
+  align-items: flex-start;
+  /* no max-width — fills full width */
 }
 
+/* Bill receipt card */
 .bill-card {
   flex: 1.8;
-  background: white;
   padding: 2.5rem;
-  box-shadow: var(--shadow-md);
-  color: #333;
 }
 
 .bill-header {
   text-align: center;
-  border-bottom: 2px solid #eee;
+  border-bottom: 2px solid var(--color-primary-light);
   padding-bottom: 1.5rem;
   margin-bottom: 2rem;
 }
 
 .bill-header h2 {
-  font-size: 2rem;
+  font-size: 1.75rem;
+  /* §2 h2 — salon name display */
+  font-weight: 700;
   color: var(--color-primary);
   margin-bottom: 0.5rem;
 }
 
 .salon-details p {
   margin: 0.2rem 0;
-  color: #666;
-  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
 }
 
 .bill-meta {
   display: flex;
   justify-content: space-between;
   margin-top: 1.5rem;
-  font-size: 0.9rem;
-  color: #888;
+  font-size: 0.82rem;
+  /* §2 small */
+  color: var(--color-text-muted);
 }
 
+/* Bill sections */
 .bill-section {
   margin-bottom: 2rem;
 }
 
 .bill-section h4 {
-  border-bottom: 1px solid #eee;
+  font-size: 0.72rem;
+  /* §2 label/caption — uppercase section label */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-primary-light);
   padding-bottom: 0.5rem;
   margin-bottom: 1rem;
-  color: var(--color-primary-dark);
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  letter-spacing: 1px;
 }
 
 .customer-section p {
   margin: 0.4rem 0;
+  font-size: 1rem;
+  color: var(--color-text);
 }
 
+/* Bill table */
 .bill-table {
   width: 100%;
   border-collapse: collapse;
@@ -120,20 +123,25 @@
 
 .bill-table th,
 .bill-table td {
-  padding: 1rem 0;
-  border-bottom: 1px solid #f9f9f9;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--color-bg);
 }
 
 .bill-table th {
   text-align: left;
-  font-size: 0.9rem;
-  color: #666;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .bill-table tfoot th {
   border-bottom: none;
-  font-size: 1.25rem;
-  padding-top: 2rem;
+  font-size: 1.1rem;
+  /* §2 h3 — total label */
+  font-weight: 700;
+  padding-top: 1.5rem;
   color: var(--color-primary);
 }
 
@@ -147,59 +155,94 @@
 
 .bill-footer {
   text-align: center;
-  margin-top: 3rem;
+  margin-top: 2.5rem;
   padding-top: 1rem;
-  border-top: 1px dashed #ddd;
-  color: #999;
+  border-top: 1px dashed var(--color-primary-light);
+  color: var(--color-text-muted);
   font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* ─ Actions sidebar ─ */
+.billing-actions {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.action-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .btn-full {
   width: 100%;
 }
 
+/* Paid badge — uses global .status-badge.completed color tokens */
 .paid-badge {
-  background: #e6f7e6;
-  color: #2e7d32;
-  padding: 0.4rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
+  background: #dcfce7;
+  color: #15803d;
+  padding: 0.3rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
   font-weight: 600;
-  border: 1px solid #c8e6c9;
+  border: 1px solid #bbf7d0;
 }
 
 .payment-status-card {
   text-align: center;
-  padding: 2rem !important;
-  background: #f8fff8 !important;
-  border: 1px solid #e0f2f1;
+  padding: 2rem 1.5rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius);
+}
+
+.payment-status-card h4 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 0.5rem;
 }
 
 .paid-success {
-  color: #2e7d32;
+  color: #15803d;
   font-weight: 600;
-  margin-top: 0.5rem;
+  font-size: 0.9rem;
 }
 
-/* Modal Styling */
+/* ─ QR modal ─ */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1100;
+  animation: fadeIn 0.15s ease-out;
 }
 
 .qr-modal {
-  width: 100%;
-  max-width: 400px;
-  padding: 2rem !important;
+  width: 90%;
+  max-width: 440px;
+  padding: 2.5rem;
   text-align: center;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  background: var(--color-card);
+  animation: slideUp 0.25s ease-out;
+}
+
+.qr-modal h3 {
+  font-size: 1.1rem;
+  /* §2 h3 — section title */
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 0;
 }
 
 .qr-placeholder {
@@ -209,9 +252,9 @@
 .qr-box {
   width: 200px;
   height: 200px;
-  background: #f5f5f5;
+  background: var(--color-bg);
   margin: 0 auto 1.5rem;
-  border: 2px dashed #ccc;
+  border: 2px dashed var(--color-primary-light);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -220,12 +263,12 @@
 
 .qr-icon {
   font-size: 2rem;
-  color: #999;
-  font-weight: bold;
+  color: var(--color-text-muted);
+  font-weight: 700;
 }
 
 .amount-text {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-primary);
   margin-top: 0.5rem;
@@ -238,12 +281,45 @@
   margin-top: 1.5rem;
 }
 
-.empty-state {
-  text-align: center;
-  padding: 3rem;
-  color: #999;
+/* ─ Loading overlay ─ */
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  font-weight: 600;
+  color: var(--color-primary);
+  font-size: 1rem;
 }
 
+/* ─ Animations ─ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ─ Print ─ */
 @media print {
 
   .no-print,
@@ -272,7 +348,6 @@
     box-shadow: none !important;
     padding: 0 !important;
     width: 6.5in;
-    /* Standard bill width */
     margin: 0 auto;
     border: none !important;
   }
@@ -281,7 +356,6 @@
     display: block;
   }
 
-  .tab-content,
   .card {
     box-shadow: none !important;
     border: none !important;
@@ -289,6 +363,7 @@
   }
 }
 
+/* ─ Responsive ─ */
 @media (max-width: 768px) {
   .billing-container {
     flex-direction: column;
@@ -296,5 +371,9 @@
 
   .bill-card {
     padding: 1.5rem;
+  }
+
+  .config-row {
+    grid-template-columns: 1fr;
   }
 }

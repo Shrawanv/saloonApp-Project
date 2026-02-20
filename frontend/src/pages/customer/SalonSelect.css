@@ -1,16 +1,12 @@
-.page-header {
-  margin-bottom: 2rem;
+/* SalonSelect.css — scoped styles only. Global utilities in index.css */
+/* .page-header, .loading-state, .error-state, .empty-state are global */
+
+.salon-select-page {
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-.page-header h1 {
-  font-size: 1.75rem;
-  margin-bottom: 0.5rem;
-}
-
-.page-header p {
-  color: var(--color-text-muted);
-}
-
+/* Actions bar */
 .salon-select-actions {
   display: flex;
   flex-direction: column;
@@ -18,13 +14,14 @@
   margin-bottom: 2rem;
 }
 
+/* QR button */
 .qr-btn {
   display: flex;
   align-items: center;
   gap: 1rem;
   padding: 1.25rem;
   cursor: pointer;
-  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth), border-color var(--transition-fast);
+  transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
 }
 
 .qr-btn:hover {
@@ -40,6 +37,7 @@
   font-size: 2rem;
 }
 
+/* Search */
 .search-box {
   display: flex;
   align-items: center;
@@ -48,12 +46,12 @@
   background: var(--color-card);
   border-radius: var(--radius);
   box-shadow: var(--shadow-sm);
-  border: 2px solid #e5e5e5;
+  border: 2px solid var(--color-primary-light);
   transition: border-color var(--transition-fast), box-shadow var(--transition-smooth);
 }
 
 .search-box:hover {
-  border-color: #d4d4d4;
+  border-color: #c4b5f0;
 }
 
 .search-box:focus-within {
@@ -76,6 +74,7 @@
   outline: none;
 }
 
+/* QR scanner placeholder */
 .qr-scanner-placeholder {
   margin-bottom: 2rem;
   padding: 3rem;
@@ -83,17 +82,20 @@
 }
 
 .qr-placeholder {
-  background: #f0f0f0;
+  background: var(--color-bg);
   padding: 2rem;
   border-radius: var(--radius);
   color: var(--color-text-muted);
 }
 
+/* Salon list */
 .salon-list h3 {
   margin-bottom: 1rem;
-  font-size: 1.125rem;
+  font-size: 1.1rem;
+  font-weight: 700;
 }
 
+/* Salon cards — follow card rows pattern (§4) */
 .salon-card {
   display: flex;
   align-items: center;
@@ -122,18 +124,18 @@
   transform: translateX(4px);
 }
 
+/* Salon avatar */
 .salon-avatar {
   width: 56px;
   height: 56px;
   background: var(--color-primary-light);
   border-radius: 50%;
-  /* Changed to circle */
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.5rem;
   overflow: hidden;
-  /* Added to clip image */
+  flex-shrink: 0;
 }
 
 .salon-logo-img {
@@ -142,13 +144,16 @@
   object-fit: cover;
 }
 
+/* Salon info — heading scale §2 */
 .salon-info {
   flex: 1;
 }
 
 .salon-info h4 {
   margin-bottom: 0.25rem;
-  font-size: 1.125rem;
+  font-size: 1rem;
+  /* body/value size — §2 */
+  font-weight: 600;
 }
 
 .salon-address {
@@ -160,7 +165,8 @@
 .salon-meta {
   display: flex;
   gap: 1rem;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+  /* small — §2 */
 }
 
 .salon-meta .rating {
@@ -173,20 +179,6 @@
 
 .salon-meta .status.closed {
   color: var(--color-text-muted);
-}
-
-.loading-state,
-.error-state,
-.empty-state {
-  text-align: center;
-  padding: 2rem;
-  color: var(--color-text-muted);
-}
-
-.error-state {
-  color: #dc2626;
-  background: #fee2e2;
-  border-radius: var(--radius);
 }
 
 .services-count {

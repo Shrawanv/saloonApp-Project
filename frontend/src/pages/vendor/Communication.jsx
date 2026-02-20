@@ -3,7 +3,7 @@ import './Communication.css'
 
 const COMM_TABS = [
   { id: 'chat', label: 'In-app Chat' },
-  { id: 'appointments', label: 'Accept / Reschedule / Cancel' },
+  { id: 'appointments', label: 'Accept / Reschedule' },
   { id: 'broadcast', label: 'Broadcast Offers' },
 ]
 
@@ -12,13 +12,16 @@ function Communication() {
 
   return (
     <div className="communication-page">
-      <h1>Communication Tools</h1>
+      <div className="page-header">
+        <h1>Communication Tools</h1>
+        <p>Chat with customers and manage appointment requests</p>
+      </div>
 
-      <div className="vendor-tabs">
+      <div className="profile-tabs">
         {COMM_TABS.map((tab) => (
           <button
             key={tab.id}
-            className={`vendor-tab ${activeTab === tab.id ? 'active' : ''}`}
+            className={`profile-tab ${activeTab === tab.id ? 'active' : ''}`}
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.label}
@@ -27,14 +30,21 @@ function Communication() {
       </div>
 
       <div className="tab-content card">
-        {activeTab === 'chat' && <p>In-app chat with customers (placeholder)</p>}
-        {activeTab === 'appointments' && (
-          <div>
-            <h3>Appointment Requests</h3>
-            <p>View, Accept, Reschedule, or Cancel appointments</p>
+        {activeTab === 'chat' && (
+          <div className="empty-state">
+            <p>💬 In-app chat with customers — coming soon!</p>
           </div>
         )}
-        {activeTab === 'broadcast' && <p>Broadcast offers to followers (placeholder)</p>}
+        {activeTab === 'appointments' && (
+          <div className="empty-state">
+            <p>📅 Accept, reschedule, or cancel appointments — coming soon!</p>
+          </div>
+        )}
+        {activeTab === 'broadcast' && (
+          <div className="empty-state">
+            <p>📣 Broadcast offers to your customers — coming soon!</p>
+          </div>
+        )}
       </div>
     </div>
   )

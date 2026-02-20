@@ -1,3 +1,6 @@
+/* LoginPage.css — scoped styles only. Global utilities in index.css */
+/* .error-message, .btn:disabled are global — removed duplicates */
+
 .login-page {
   min-height: 100vh;
   display: flex;
@@ -7,9 +10,11 @@
   background: linear-gradient(135deg, var(--color-bg) 0%, var(--color-primary-light) 50%, #f3e8ff 100%);
 }
 
+/* Login card — §3 profile/form max-width = 600px, but auth cards conventionally narrower */
 .login-card {
   width: 100%;
-  max-width: 420px;
+  max-width: 440px;
+  /* §3 modal/form max = 440px */
   transition: transform var(--transition-smooth), box-shadow var(--transition-smooth);
 }
 
@@ -17,6 +22,7 @@
   box-shadow: var(--shadow-hover);
 }
 
+/* Login header — app logo/brand, intentional exception to h1 scale */
 .login-header {
   text-align: center;
   margin-bottom: 2rem;
@@ -24,8 +30,10 @@
 
 .login-header h1 {
   font-size: 2rem;
+  /* App logo — intentional brand exception */
   margin-bottom: 0.5rem;
   color: var(--color-accent);
+  font-weight: 700;
 }
 
 .login-header p {
@@ -33,8 +41,7 @@
   font-size: 0.95rem;
 }
 
-
-
+/* Form elements */
 .login-form .form-group {
   margin-bottom: 1.25rem;
 }
@@ -42,21 +49,25 @@
 .login-form label {
   display: block;
   margin-bottom: 0.5rem;
-  font-weight: 500;
-  font-size: 0.9rem;
+  font-weight: 600;
+  font-size: 0.82rem;
+  /* §2 small / label */
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-muted);
 }
 
 .login-form input {
   width: 100%;
   padding: 0.75rem 1rem;
-  border: 2px solid #e5e5e5;
+  border: 2px solid var(--color-primary-light);
   border-radius: var(--radius-sm);
   font-size: 1rem;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .login-form input:hover {
-  border-color: #d4d4d4;
+  border-color: #c4b5f0;
 }
 
 .login-form input:focus {
@@ -71,6 +82,7 @@
   margin-top: 0.5rem;
 }
 
+/* Login options */
 .login-options {
   margin-top: 1.5rem;
   display: flex;
@@ -97,28 +109,9 @@
   font-size: 0.85rem;
 }
 
-
-
-.error-message {
-  background: #fee2e2;
-  color: #dc2626;
-  padding: 0.75rem 1rem;
-  border-radius: var(--radius-sm);
-  margin-bottom: 1rem;
-  font-size: 0.9rem;
-  text-align: center;
-}
-
+/* 2-col form row — §3 pattern */
 .form-row {
-  display: flex;
-  gap: 1rem;
-}
-
-.form-row .form-group {
-  flex: 1;
-}
-
-.btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
 }

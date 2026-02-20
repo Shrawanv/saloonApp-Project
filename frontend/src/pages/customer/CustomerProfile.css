@@ -1,10 +1,14 @@
+/* CustomerProfile.css — scoped styles only. Global utilities in index.css */
+/* .section-header, .empty-state, .error-message, .success-message are global */
+
 .profile-page {
     max-width: 600px;
     margin: 2rem auto;
-    padding: 2.5rem;
+    padding: 1.5rem;
     text-align: center;
 }
 
+/* Avatar */
 .profile-avatar-container {
     display: flex;
     flex-direction: column;
@@ -17,12 +21,13 @@
     width: 120px;
     height: 120px;
     border-radius: 50%;
-    background: #f0f0f0;
+    background: var(--color-bg);
+    border: 2px dashed rgba(168, 85, 247, 0.35);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 4rem;
-    color: #999;
+    color: var(--color-text-muted);
 }
 
 .profile-avatar-img {
@@ -35,51 +40,54 @@
 
 .profile-avatar-container .media-uploader .btn {
     padding: 0.5rem 1rem;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
 }
 
+/* Header */
 .profile-header h2 {
+    font-size: 1.75rem;
+    /* §2 — profile names only */
+    font-weight: 700;
     margin-bottom: 0.5rem;
 }
 
 .profile-email {
     color: var(--color-text-muted);
     margin-bottom: 2rem;
+    font-size: 0.9rem;
 }
 
+/* Details section */
 .profile-details-section {
     margin-top: 2rem;
     padding-top: 2rem;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--color-primary-light);
     text-align: left;
 }
 
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+/* .section-header is global — override just the margin here */
+.profile-details-section .section-header {
     margin-bottom: 2rem;
 }
 
-.section-header h3 {
-    margin: 0;
-    font-size: 1.25rem;
-}
-
+/* Edit form — §10 pattern */
 .edit-profile-form {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.25rem;
+    /* §3 form field gap */
     background: #f8fafc;
-    padding: 2rem;
+    padding: 1.75rem;
     border-radius: var(--radius);
     border: 1px solid #e2e8f0;
 }
 
+/* 2-col form row — §3 Flexbox & Grid pattern */
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
+    gap: 1.25rem;
+    /* §3 — was 1.5rem */
 }
 
 .form-group {
@@ -89,9 +97,12 @@
 }
 
 .form-group label {
-    font-size: 0.875rem;
+    font-size: 0.82rem;
+    /* §2 small */
     font-weight: 600;
     color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .form-group input {
@@ -105,9 +116,10 @@
 .form-group input:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
+    box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
+/* Form actions */
 .form-actions {
     display: flex;
     justify-content: flex-end;
@@ -117,10 +129,11 @@
     border-top: 1px solid #e2e8f0;
 }
 
+/* Read-only details grid — §11 */
 .details-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 2rem;
+    gap: 1.75rem 2rem;
 }
 
 .detail-item {
@@ -130,43 +143,36 @@
 }
 
 .detail-item .label {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
+    /* §2 label/caption */
     text-transform: uppercase;
     color: var(--color-text-muted);
-    letter-spacing: 0.05em;
-    font-weight: 600;
+    letter-spacing: 0.06em;
+    font-weight: 700;
 }
 
 .detail-item .value {
-    font-weight: 500;
-    font-size: 1.1rem;
+    font-weight: 600;
+    /* §2 body/value */
+    font-size: 1rem;
     color: var(--color-text);
 }
 
-@media (max-width: 640px) {
-    .form-row {
-        grid-template-columns: 1fr;
-    }
-
-    .profile-page {
-        padding: 1.5rem;
-    }
-}
-
+/* Password action */
 .password-action button {
     font-weight: 600;
     color: var(--color-primary);
-    background: rgba(var(--color-primary-rgb), 0.05);
-    border: 1px solid rgba(var(--color-primary-rgb), 0.2);
+    background: rgba(168, 85, 247, 0.05);
+    border: 1px solid rgba(168, 85, 247, 0.2);
     transition: all 0.2s;
 }
 
 .password-action button:hover {
-    background: rgba(var(--color-primary-rgb), 0.1);
+    background: rgba(168, 85, 247, 0.1);
     transform: translateY(-1px);
 }
 
-/* Modal Styling */
+/* Modal */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -183,19 +189,21 @@
 }
 
 .modal-content {
-    background: white;
+    background: var(--color-card);
     padding: 2.5rem;
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius);
     width: 90%;
-    max-width: 450px;
-    box-shadow: var(--shadow-xl);
+    max-width: 440px;
+    /* §3 modal max-width */
+    box-shadow: var(--shadow-lg);
     animation: slideUp 0.25s ease-out;
     text-align: left;
 }
 
 .modal-content h3 {
     margin-bottom: 2rem;
-    font-size: 1.5rem;
+    font-size: 1.1rem;
+    /* §2 h3 — section title */
     font-weight: 700;
     text-align: center;
     color: var(--color-text);
@@ -227,5 +235,15 @@
     to {
         transform: translateY(0);
         opacity: 1;
+    }
+}
+
+@media (max-width: 640px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-page {
+        padding: 1rem;
     }
 }

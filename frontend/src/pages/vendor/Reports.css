@@ -1,3 +1,4 @@
-.reports-page h1 {
-  margin-bottom: 1.5rem;
+/* Reports.css */
+.reports-page {
+  /* no max-width — fills vendor-content area like VendorHome */
 }

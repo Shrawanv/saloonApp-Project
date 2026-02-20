@@ -100,7 +100,7 @@ function SalonSelect() {
 
         {!loading && !error && salons.length === 0 && (
           <div className="empty-state">
-            {search ? `No salons found for "${search}"` : 'No salons available'}
+            <p>{search ? `No salons found for "${search}"` : 'No salons available'}</p>
           </div>
         )}
 

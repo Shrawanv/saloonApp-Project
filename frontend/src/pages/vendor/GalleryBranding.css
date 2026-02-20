@@ -1,7 +1,7 @@
+/* GalleryBranding.css — hardcoded colors replaced with CSS variables */
+
 .gallery-branding-container {
-  padding: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+  /* no max-width — fills vendor-content area like VendorHome */
 }
 
 .branding-section {
@@ -10,7 +10,7 @@
 }
 
 .section-desc {
-  color: #666;
+  color: var(--color-text-muted);
   margin: 0;
   font-size: 0.95rem;
 }
@@ -20,9 +20,9 @@
   gap: 2rem;
   align-items: center;
   padding: 1.5rem;
-  background: #fafafa;
-  border-radius: 12px;
-  border: 1px solid #f0f0f0;
+  background: var(--color-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--color-primary-light);
 }
 
 .logo-preview-container {
@@ -32,9 +32,9 @@
 .logo-preview {
   width: 120px;
   height: 120px;
-  border-radius: 12px;
-  background: #fff;
-  border: 1px solid #e0e0e0;
+  border-radius: var(--radius);
+  background: var(--color-card);
+  border: 1px solid var(--color-primary-light);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -50,7 +50,7 @@
 }
 
 .logo-placeholder {
-  color: #adb5bd;
+  color: var(--color-text-muted);
   font-weight: 500;
   font-size: 0.85rem;
 }
@@ -61,34 +61,18 @@
 
 .logo-info h4 {
   margin: 0 0 0.4rem 0;
-  color: #333;
+  color: var(--color-text);
   font-size: 1rem;
 }
 
 .logo-info p {
   margin: 0;
-  color: #777;
+  color: var(--color-text-muted);
   font-size: 0.9rem;
 }
 
 .gallery-section {
   padding: 2rem;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  gap: 1.5rem;
-}
-
-.section-header h3 {
-  margin: 0 0 0.5rem 0;
-}
-
-.section-header .section-desc {
-  margin: 0;
 }
 
 .gallery-grid {
@@ -101,15 +85,16 @@
 .gallery-item {
   position: relative;
   aspect-ratio: 1;
-  border-radius: 12px;
+  border-radius: var(--radius);
   overflow: hidden;
   background: #000;
   box-shadow: var(--shadow-sm);
-  transition: transform 0.2s;
+  transition: transform var(--transition-smooth);
 }
 
 .gallery-item:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
 }
 
 .gallery-item img,
@@ -126,7 +111,7 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: rgba(255, 77, 79, 0.9);
+  background: rgba(239, 68, 68, 0.9);
   color: white;
   border: none;
   font-size: 1.5rem;
@@ -135,7 +120,7 @@
   justify-content: center;
   cursor: pointer;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: opacity var(--transition-fast);
 }
 
 .gallery-item:hover .delete-btn {
@@ -146,11 +131,11 @@
   grid-column: 1 / -1;
   text-align: center;
   padding: 5rem 2rem;
-  background: #fcfcfc;
-  border-radius: 16px;
-  color: #999;
-  border: 2px dashed #eee;
-  font-size: 1.1rem;
+  background: #f8fafc;
+  border-radius: var(--radius);
+  color: var(--color-text-muted);
+  border: 1px dashed #cbd5e1;
+  font-size: 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -163,14 +148,6 @@
   opacity: 0.5;
 }
 
-@media (max-width: 992px) {
-  .logo-actions {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-}
-
 @media (max-width: 768px) {
   .logo-management {
     flex-direction: column;
@@ -178,14 +155,9 @@
     gap: 1.5rem;
   }
 
-  .logo-actions {
-    align-items: center;
-    text-align: center;
-  }
-
   .section-header {
     flex-direction: column;
-    align-items: center;
-    text-align: center;
+    align-items: flex-start;
+    text-align: left;
   }
 }

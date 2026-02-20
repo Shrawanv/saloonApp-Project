@@ -133,11 +133,11 @@ function BookingQueue() {
     return `${hour12}:${minutes} ${ampm}`
   }
 
-  const getStatusBadge = (status) => {
+  const getStatusClass = (status) => {
     switch (status) {
-      case 'BOOKED': return 'badge-pending'
-      case 'COMPLETED': return 'badge-completed'
-      case 'CANCELLED': return 'badge-cancelled'
+      case 'BOOKED': return 'pending'
+      case 'COMPLETED': return 'completed'
+      case 'CANCELLED': return 'cancelled'
       default: return ''
     }
   }
@@ -145,7 +145,9 @@ function BookingQueue() {
   if (salons.length === 0 && !loading) {
     return (
       <div className="booking-queue-page">
-        <h1>Booking & Queue Management</h1>
+        <div className="page-header">
+          <h1>Booking &amp; Queue Management</h1>
+        </div>
         <div className="no-salon card">
           <p>You need to create a salon first to manage bookings.</p>
         </div>
@@ -155,7 +157,9 @@ function BookingQueue() {
 
   return (
     <div className="booking-queue-page">
-      <h1>Booking & Queue Management</h1>
+      <div className="page-header">
+        <h1>Booking &amp; Queue Management</h1>
+      </div>
 
       {salons.length > 1 && (
         <div className="salon-selector">
@@ -171,11 +175,11 @@ function BookingQueue() {
         </div>
       )}
 
-      <div className="vendor-tabs">
+      <div className="profile-tabs">
         {VENDOR_TABS.map((tab) => (
           <button
             key={tab.id}
-            className={`vendor-tab ${activeTab === tab.id ? 'active' : ''}`}
+            className={`profile-tab ${activeTab === tab.id ? 'active' : ''}`}
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.label}
@@ -242,9 +246,9 @@ function BookingQueue() {
         <h3>{activeTab === 'live' ? "Today's Queue" : 'All Appointments'}</h3>
 
         {loading ? (
-          <p className="loading">Loading appointments...</p>
+          <div className="loading-state">Loading appointments...</div>
         ) : appointments.length === 0 ? (
-          <p className="empty">No appointments found</p>
+          <div className="empty-state"><p>No appointments found</p></div>
         ) : (
           <div className="queue-table">
             {appointments.map((apt) => (
@@ -262,8 +266,8 @@ function BookingQueue() {
                 </div>
                 <div className="status-container">
                   {apt.status !== 'BOOKED' && (
-                    <span className={`status-badge ${getStatusBadge(apt.status)}`}>
-                      {apt.status}
+                    <span className={`status-badge ${getStatusClass(apt.status)}`}>
+                      {apt.status.charAt(0) + apt.status.slice(1).toLowerCase()}
                     </span>
                   )}
                 </div>

@@ -109,7 +109,10 @@ function PaymentBilling() {
   return (
     <div className="payment-billing-page">
       <div className="no-print">
-        <h1>Payment & Billing</h1>
+        <div className="page-header">
+          <h1>Payment &amp; Billing</h1>
+          <p>Select a salon and appointment to generate a bill</p>
+        </div>
 
         <div className="billing-config card">
           <div className="config-row">
@@ -213,18 +216,18 @@ function PaymentBilling() {
                 <h4>Accept Payment</h4>
                 <div className="action-group">
                   <button
-                    className="btn btn-success"
+                    className="btn btn-primary"
                     onClick={() => handleAcceptPayment('Cash')}
                     disabled={updating}
                   >
-                    Cash
+                    💵 Cash
                   </button>
                   <button
-                    className="btn btn-primary"
+                    className="btn btn-outline"
                     onClick={() => handleAcceptPayment('Online')}
                     disabled={updating}
                   >
-                    Online (QR)
+                    📱 Online (QR)
                   </button>
                 </div>
               </div>
@@ -246,7 +249,7 @@ function PaymentBilling() {
         </div>
       ) : (
         !loading && (
-          <div className="empty-state card no-print">
+          <div className="empty-state no-print">
             <p>Please select a customer to generate a bill.</p>
           </div>
         )
@@ -264,7 +267,7 @@ function PaymentBilling() {
               <p className="amount-text">Amount: Rs. {selectedAppointment?.total_amount}</p>
             </div>
             <div className="modal-actions">
-              <button className="btn btn-success" onClick={() => handleAcceptPayment('Online')}>
+              <button className="btn btn-primary" onClick={() => handleAcceptPayment('Online')}>
                 Confirm Payment Received
               </button>
               <button className="btn btn-outline" onClick={() => setShowQR(false)}>
