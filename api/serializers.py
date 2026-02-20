@@ -58,7 +58,6 @@ class SalonSerializer(serializers.ModelSerializer):
             "closing_time",
             "break_start_time",
             "break_end_time",
-            "slot_duration",
             "max_capacity_per_slot",
             "is_active",
             "average_rating",
@@ -80,7 +79,6 @@ class VendorSalonCreateUpdateSerializer(serializers.Serializer):
     closing_time = serializers.TimeField(required=True)
     break_start_time = serializers.TimeField(required=False, allow_null=True)
     break_end_time = serializers.TimeField(required=False, allow_null=True)
-    slot_duration = serializers.IntegerField(required=False, default=60, min_value=1)
     max_capacity_per_slot = serializers.IntegerField(required=False, default=1, min_value=1)
     is_active = serializers.BooleanField(required=False, default=True)
 

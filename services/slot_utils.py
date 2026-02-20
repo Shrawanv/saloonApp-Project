@@ -5,7 +5,7 @@ from bookings.models import Appointment
 def generate_slots_for_date(salon, target_date, slot_duration_minutes=None):
     """
     Generate time slots for a given salon and date, skipping break-time slots.
-    Uses slot_duration_minutes if provided, else salon.slot_duration.
+    Requires slot_duration_minutes; falls back to 15 minutes if not provided.
     """
     if not salon:
         raise ValueError("Salon must be provided")
@@ -13,7 +13,7 @@ def generate_slots_for_date(salon, target_date, slot_duration_minutes=None):
     if not salon.opening_time or not salon.closing_time:
         raise ValueError("Salon must have opening and closing times defined")
 
-    duration = slot_duration_minutes if slot_duration_minutes is not None else salon.slot_duration
+    duration = slot_duration_minutes if slot_duration_minutes is not None else 15
     slots = []
 
     opening_time = salon.opening_time
@@ -64,18 +64,19 @@ def _appointment_end_time(appointment, salon):
     """End time of an appointment (slot_start + duration)."""
     from datetime import datetime, timedelta
     start_dt = datetime.combine(appointment.appointment_date, appointment.slot_start)
-    duration = appointment.duration_minutes or salon.slot_duration
+    duration = appointment.duration_minutes or 15
     end_dt = start_dt + timedelta(minutes=duration)
     return end_dt.time()
 
 
 def get_slot_availability(salon, target_date, duration_minutes=None, exclude_past_slots=True):
     """
-    Returns only available slots for the given duration (or salon.slot_duration).
+    Returns only available slots for the given duration.
     Excludes break time and past slots when date is today. For variable duration,
     a slot is full if any existing BOOKED appointment overlaps [slot_start, slot_start + duration].
+    Falls back to 15 minutes if duration_minutes is not provided.
     """
-    duration = duration_minutes if duration_minutes is not None else salon.slot_duration
+    duration = duration_minutes if duration_minutes is not None else 15
     slots = generate_slots_for_date(salon, target_date, slot_duration_minutes=duration)
     availability = []
 
@@ -96,7 +97,7 @@ def get_slot_availability(salon, target_date, duration_minutes=None, exclude_pas
         overlapping = 0
         for appt in existing:
             appt_start = appt["slot_start"]
-            appt_dur = appt["duration_minutes"] or salon.slot_duration
+            appt_dur = appt["duration_minutes"] or 15
             appt_start_dt = datetime.combine(target_date, appt_start)
             appt_end_dt = appt_start_dt + timedelta(minutes=appt_dur)
             appt_end = appt_end_dt.time()

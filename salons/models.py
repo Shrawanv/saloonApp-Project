@@ -18,7 +18,6 @@ class Salon(models.Model):
     break_start_time = models.TimeField(null=True, blank=True)
     break_end_time = models.TimeField(null=True, blank=True)
 
-    slot_duration = models.PositiveIntegerField(default=60)  # minutes
     max_capacity_per_slot = models.PositiveIntegerField(default=1)
 
     is_active = models.BooleanField(default=True)

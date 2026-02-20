@@ -47,7 +47,6 @@ class VendorSalonListCreateAPIView(APIView):
                     closing_time=data["closing_time"],
                     break_start_time=data.get("break_start_time"),
                     break_end_time=data.get("break_end_time"),
-                    slot_duration=data.get("slot_duration", 60),
                     max_capacity_per_slot=data.get("max_capacity_per_slot", 1),
                     is_active=data.get("is_active", True),
                 )
