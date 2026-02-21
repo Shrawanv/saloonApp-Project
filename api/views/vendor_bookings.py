@@ -124,3 +124,42 @@ class VendorAppointmentUpdateAPIView(APIView):
         
         appointment.save()
         return Response(AppointmentSerializer(appointment).data, status=status.HTTP_200_OK)
+
+
+class VendorWalkInBookingAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsVendor]
+
+    def post(self, request):
+        from bookings.services import book_appointment
+        from salons.models import Salon
+        from api.serializers import BookAppointmentSerializer
+        from django.utils import timezone
+
+        serializer = BookAppointmentSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        salon_id = serializer.validated_data["salon_id"]
+        salon = Salon.objects.filter(id=salon_id, owner=request.user).first()
+        if not salon:
+            return Response({"detail": "Salon not found or not owned by you."}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            appointment = book_appointment(
+                user=None,  # Walk-ins are guests
+                salon=salon,
+                appointment_date=serializer.validated_data["appointment_date"],
+                slot_start=serializer.validated_data["slot_start"],
+                service_ids=serializer.validated_data["service_ids"],
+                guest_name=serializer.validated_data.get("guest_name"),
+                guest_mobile=serializer.validated_data.get("guest_mobile"),
+            )
+
+            # Auto-check-in if requested
+            if request.data.get("confirm"):
+                appointment.checked_in_at = timezone.now()
+                appointment.save(update_fields=["checked_in_at"])
+
+            return Response(AppointmentSerializer(appointment).data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)

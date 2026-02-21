@@ -10,7 +10,7 @@ from api.views.slots import SlotsAPIView, SlotsBySalonPathAPIView
 from api.views.bookings import BookAppointmentAPIView, MyAppointmentsAPIView
 from api.views.checkin import CheckInAPIView
 from api.views.reviews import ReviewListCreateAPIView
-from api.views.vendor_bookings import VendorAppointmentListAPIView, VendorAppointmentUpdateAPIView
+from api.views.vendor_bookings import VendorAppointmentListAPIView, VendorAppointmentUpdateAPIView, VendorWalkInBookingAPIView
 from api.views.media import ProfilePictureUpdateAPIView, SalonLogoUpdateAPIView, SalonMediaListCreateAPIView, SalonMediaDeleteAPIView
 
 urlpatterns = [
@@ -35,6 +35,7 @@ urlpatterns = [
     path("bookings/check-in/", CheckInAPIView.as_view(), name="api-check-in"),
     path("bookings/mine/", MyAppointmentsAPIView.as_view(), name="api-my-appointments"),
     path("appointments/vendor/", VendorAppointmentListAPIView.as_view(), name="api-vendor-appointments"),
+    path("appointments/vendor/walk-in/", VendorWalkInBookingAPIView.as_view(), name="api-vendor-walk-in"),
     path("appointments/vendor/<int:pk>/update/", VendorAppointmentUpdateAPIView.as_view(), name="api-vendor-appointment-update"),
 
     # Customer only (profile, bookings)

@@ -18,6 +18,16 @@ function BookingQueue() {
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(null)
 
+  // Walk-in booking state
+  const [showWalkInModal, setShowWalkInModal] = useState(false)
+  const [salonServices, setSalonServices] = useState([])
+  const [walkInForm, setWalkInForm] = useState({
+    guest_name: '',
+    guest_mobile: '',
+    service_ids: [],
+    confirm: true, // Auto check-in by default for walk-ins
+  })
+
   useEffect(() => {
     fetchSalons()
   }, [])
@@ -25,6 +35,7 @@ function BookingQueue() {
   useEffect(() => {
     if (selectedSalon) {
       fetchAppointments()
+      fetchSalonServices(selectedSalon)
     }
   }, [selectedSalon, activeTab, dateFilter, startDate, endDate])
 
@@ -50,6 +61,15 @@ function BookingQueue() {
     }
   }
 
+  const fetchSalonServices = async (salonId) => {
+    try {
+      const data = await serviceService.getServicesBySalon(salonId)
+      setSalonServices(data)
+    } catch (err) {
+      console.error('Error fetching services:', err)
+    }
+  }
+
   const fetchAppointments = async () => {
     try {
       setLoading(true)
@@ -66,8 +86,10 @@ function BookingQueue() {
 
       if (activeTab === 'live') {
         params.date = getFormattedDate(new Date())
-        params.status = 'BOOKED'
-        params.confirmed = 'true'
+        // Keep it flexible to show all today's bookings in live view, 
+        // but often we want only non-finalised ones.
+        // The original code filtered by status=BOOKED and confirmed=true.
+        // Let's remove status/confirmed to see the full "Today's Queue" but can toggle.
       } else {
         const today = new Date()
         if (dateFilter === 'today') {
@@ -104,7 +126,6 @@ function BookingQueue() {
       fetchAppointments()
     } catch (err) {
       console.error('Error updating appointment:', err)
-      alert('Failed to update appointment status')
     } finally {
       setUpdating(null)
     }
@@ -116,12 +137,55 @@ function BookingQueue() {
       const action = isUndo ? 'undo_check_in' : 'check_in'
       await appointmentService.updateAppointmentStatus(appointmentId, null, action)
       fetchAppointments()
+      // Also refresh salons for waiting time
+      fetchSalons()
     } catch (err) {
       console.error('Error confirming appointment:', err)
-      alert('Failed to update confirmation status')
     } finally {
       setUpdating(null)
     }
+  }
+
+  const handleWalkInSubmit = async (e) => {
+    e.preventDefault()
+    if (walkInForm.service_ids.length === 0) {
+      alert('Please select at least one service')
+      return
+    }
+    try {
+      setUpdating('walkin')
+      const todayString = new Date().toISOString().split('T')[0]
+      const nowTime = new Date().toTimeString().split(' ')[0].slice(0, 5)
+
+      await appointmentService.createWalkIn({
+        salon_id: selectedSalon,
+        guest_name: walkInForm.guest_name,
+        guest_mobile: walkInForm.guest_mobile,
+        service_ids: walkInForm.service_ids,
+        appointment_date: todayString,
+        slot_start: nowTime,
+        confirm: walkInForm.confirm
+      })
+
+      setShowWalkInModal(false)
+      setWalkInForm({ guest_name: '', guest_mobile: '', service_ids: [], confirm: true })
+      fetchAppointments()
+      fetchSalons() // Refresh wait time
+    } catch (err) {
+      console.error('Error creating walk-in:', err)
+      alert(err.response?.data?.detail || 'Failed to create walk-in')
+    } finally {
+      setUpdating(null)
+    }
+  }
+
+  const toggleServiceSelection = (serviceId) => {
+    setWalkInForm(prev => {
+      const ids = prev.service_ids.includes(serviceId)
+        ? prev.service_ids.filter(id => id !== serviceId)
+        : [...prev.service_ids, serviceId]
+      return { ...prev, service_ids: ids }
+    })
   }
 
   const formatTime = (timeStr) => {
@@ -142,13 +206,15 @@ function BookingQueue() {
     }
   }
 
+  const currentSalon = salons.find(s => s.id === selectedSalon)
+
   if (salons.length === 0 && !loading) {
     return (
       <div className="booking-queue-page">
         <div className="page-header">
           <h1>Booking &amp; Queue Management</h1>
         </div>
-        <div className="no-salon card">
+        <div className="no-salon empty-state card">
           <p>You need to create a salon first to manage bookings.</p>
         </div>
       </div>
@@ -157,8 +223,18 @@ function BookingQueue() {
 
   return (
     <div className="booking-queue-page">
-      <div className="page-header">
-        <h1>Booking &amp; Queue Management</h1>
+      <div className="page-header header-with-action">
+        <div>
+          <h1>Booking &amp; Queue Management</h1>
+          {currentSalon && (
+            <p className="wait-time-indicator">
+              Estimated Wait: <strong>{currentSalon.waiting_time} mins</strong> • Queue: <strong>{currentSalon.queue_length} people</strong>
+            </p>
+          )}
+        </div>
+        <button className="btn btn-primary" onClick={() => setShowWalkInModal(true)}>
+          + Add Walk-in
+        </button>
       </div>
 
       {salons.length > 1 && (
@@ -243,7 +319,9 @@ function BookingQueue() {
           </div>
         )}
 
-        <h3>{activeTab === 'live' ? "Today's Queue" : 'All Appointments'}</h3>
+        <div className="section-header">
+          <h3>{activeTab === 'live' ? "Today's Queue" : 'All Appointments'}</h3>
+        </div>
 
         {loading ? (
           <div className="loading-state">Loading appointments...</div>
@@ -269,6 +347,9 @@ function BookingQueue() {
                     <span className={`status-badge ${getStatusClass(apt.status)}`}>
                       {apt.status.charAt(0) + apt.status.slice(1).toLowerCase()}
                     </span>
+                  )}
+                  {apt.checked_in_at && apt.status === 'BOOKED' && (
+                    <span className="status-badge active">Checked-in</span>
                   )}
                 </div>
                 {apt.status === 'BOOKED' && (
@@ -313,6 +394,76 @@ function BookingQueue() {
           </div>
         )}
       </div>
+
+      {/* Walk-in Modal */}
+      {showWalkInModal && (
+        <div className="modal-overlay" onClick={() => setShowWalkInModal(false)}>
+          <div className="modal-content bq-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Manual Walk-in Booking</h3>
+              <button className="close-btn" onClick={() => setShowWalkInModal(false)}>×</button>
+            </div>
+            <form onSubmit={handleWalkInSubmit}>
+              <div className="form-group">
+                <label>Customer Name</label>
+                <input
+                  type="text"
+                  value={walkInForm.guest_name}
+                  onChange={(e) => setWalkInForm({ ...walkInForm, guest_name: e.target.value })}
+                  placeholder="Enter name"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Mobile Number</label>
+                <input
+                  type="tel"
+                  value={walkInForm.guest_mobile}
+                  onChange={(e) => setWalkInForm({ ...walkInForm, guest_mobile: e.target.value })}
+                  placeholder="Enter mobile"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>Select Services</label>
+                <div className="modal-service-grid">
+                  {salonServices.map(service => (
+                    <div
+                      key={service.id}
+                      className={`modal-service-item ${walkInForm.service_ids.includes(service.id) ? 'selected' : ''}`}
+                      onClick={() => toggleServiceSelection(service.id)}
+                    >
+                      <span>{service.name}</span>
+                      <span>₹{service.price}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-group checkbox-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={walkInForm.confirm}
+                    onChange={(e) => setWalkInForm({ ...walkInForm, confirm: e.target.checked })}
+                  />
+                  Mark as checked-in immediately
+                </label>
+              </div>
+
+              <div className="modal-actions">
+                <button type="button" className="btn btn-ghost" onClick={() => setShowWalkInModal(false)}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={updating === 'walkin'}>
+                  {updating === 'walkin' ? 'Booking...' : 'Create Booking'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

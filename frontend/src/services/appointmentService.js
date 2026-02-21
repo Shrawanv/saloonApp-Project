@@ -56,6 +56,11 @@ const appointmentService = {
     const response = await api.post('/bookings/check-in/', data)
     return response.data
   },
+
+  async createWalkIn(data) {
+    const response = await api.post('/appointments/vendor/walk-in/', data)
+    return response.data
+  },
 }
 
 export default appointmentService

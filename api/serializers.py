@@ -64,10 +64,11 @@ class SalonSerializer(serializers.ModelSerializer):
             "reviews_count",
             "services_count",
             "queue_length",
+            "waiting_time",
             "logo",
             "media",
         )
-        read_only_fields = ("id", "average_rating", "reviews_count", "services_count", "queue_length", "media")
+        read_only_fields = ("id", "average_rating", "reviews_count", "services_count", "queue_length", "waiting_time", "media")
 
 
 class VendorSalonCreateUpdateSerializer(serializers.Serializer):
