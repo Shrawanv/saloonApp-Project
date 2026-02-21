@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { salonService, appointmentService } from '../../services'
+import { salonService, appointmentService, serviceService } from '../../services'
 import './BookingQueue.css'
 
 const VENDOR_TABS = [
@@ -17,15 +17,21 @@ function BookingQueue() {
   const [appointments, setAppointments] = useState([])
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(null)
+  const [walkInError, setWalkInError] = useState('')
 
   // Walk-in booking state
   const [showWalkInModal, setShowWalkInModal] = useState(false)
+  const [walkInStep, setWalkInStep] = useState(1) // 1: Details & Services, 2: Slot & Confirm
   const [salonServices, setSalonServices] = useState([])
+  const [walkInSlots, setWalkInSlots] = useState([])
+  const [loadingWalkInSlots, setLoadingWalkInSlots] = useState(false)
   const [walkInForm, setWalkInForm] = useState({
     guest_name: '',
     guest_mobile: '',
     service_ids: [],
-    confirm: true, // Auto check-in by default for walk-ins
+    appointment_date: new Date().toISOString().split('T')[0],
+    slot_start: '',
+    confirm: true,
   })
 
   useEffect(() => {
@@ -146,34 +152,74 @@ function BookingQueue() {
     }
   }
 
+  const fetchWalkInSlots = async () => {
+    if (!selectedSalon || !walkInForm.appointment_date) return
+    try {
+      setLoadingWalkInSlots(true)
+      const duration = salonServices
+        .filter(s => walkInForm.service_ids.includes(s.id))
+        .reduce((sum, s) => sum + (s.duration || 0), 0)
+
+      const data = await salonService.getSlots(selectedSalon, walkInForm.appointment_date, duration > 0 ? duration : undefined)
+      setWalkInSlots(data.slots || [])
+    } catch (err) {
+      console.error('Error fetching walk-in slots:', err)
+    } finally {
+      setLoadingWalkInSlots(false)
+    }
+  }
+
+  useEffect(() => {
+    if (showWalkInModal && walkInStep === 2) {
+      fetchWalkInSlots()
+    }
+  }, [walkInStep, walkInForm.appointment_date, showWalkInModal])
+
   const handleWalkInSubmit = async (e) => {
     e.preventDefault()
-    if (walkInForm.service_ids.length === 0) {
-      alert('Please select at least one service')
+    setWalkInError('')
+    if (walkInStep === 1) {
+      if (walkInForm.service_ids.length === 0) {
+        setWalkInError('Please select at least one service')
+        return
+      }
+      setWalkInStep(2)
       return
     }
+
+    if (!walkInForm.slot_start) {
+      setWalkInError('Please select a time slot')
+      return
+    }
+
     try {
       setUpdating('walkin')
-      const todayString = new Date().toISOString().split('T')[0]
-      const nowTime = new Date().toTimeString().split(' ')[0].slice(0, 5)
-
       await appointmentService.createWalkIn({
         salon_id: selectedSalon,
         guest_name: walkInForm.guest_name,
         guest_mobile: walkInForm.guest_mobile,
         service_ids: walkInForm.service_ids,
-        appointment_date: todayString,
-        slot_start: nowTime,
+        appointment_date: walkInForm.appointment_date,
+        slot_start: walkInForm.slot_start,
         confirm: walkInForm.confirm
       })
 
       setShowWalkInModal(false)
-      setWalkInForm({ guest_name: '', guest_mobile: '', service_ids: [], confirm: true })
+      setWalkInStep(1)
+      setWalkInError('')
+      setWalkInForm({
+        guest_name: '',
+        guest_mobile: '',
+        service_ids: [],
+        appointment_date: new Date().toISOString().split('T')[0],
+        slot_start: '',
+        confirm: true
+      })
       fetchAppointments()
-      fetchSalons() // Refresh wait time
+      fetchSalons()
     } catch (err) {
       console.error('Error creating walk-in:', err)
-      alert(err.response?.data?.detail || 'Failed to create walk-in')
+      setWalkInError(err.response?.data?.detail || 'Failed to create walk-in')
     } finally {
       setUpdating(null)
     }
@@ -342,6 +388,16 @@ function BookingQueue() {
                   <span>{apt.appointment_date}</span>
                   <span>{formatTime(apt.slot_start)}</span>
                 </div>
+                <div className="apt-price-col">
+                  {apt.coupon_code && parseFloat(apt.discount_amount) > 0 ? (
+                    <>
+                      <span className="price-discounted">₹{(parseFloat(apt.total_price) - parseFloat(apt.discount_amount)).toFixed(0)}</span>
+                      <span className="coupon-tag">{apt.coupon_code}</span>
+                    </>
+                  ) : apt.total_price ? (
+                    <span className="price-normal">₹{apt.total_price}</span>
+                  ) : null}
+                </div>
                 <div className="status-container">
                   {apt.status !== 'BOOKED' && (
                     <span className={`status-badge ${getStatusClass(apt.status)}`}>
@@ -397,67 +453,129 @@ function BookingQueue() {
 
       {/* Walk-in Modal */}
       {showWalkInModal && (
-        <div className="modal-overlay" onClick={() => setShowWalkInModal(false)}>
+        <div className="modal-overlay" onClick={() => { setShowWalkInModal(false); setWalkInStep(1); setWalkInError(''); }}>
           <div className="modal-content bq-modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Manual Walk-in Booking</h3>
-              <button className="close-btn" onClick={() => setShowWalkInModal(false)}>×</button>
+              <h3>{walkInStep === 1 ? 'Manual Walk-in Booking' : 'Choose a Slot'}</h3>
+              <button className="close-btn" onClick={() => { setShowWalkInModal(false); setWalkInStep(1); setWalkInError(''); }}>×</button>
             </div>
-            <form onSubmit={handleWalkInSubmit}>
-              <div className="form-group">
-                <label>Customer Name</label>
-                <input
-                  type="text"
-                  value={walkInForm.guest_name}
-                  onChange={(e) => setWalkInForm({ ...walkInForm, guest_name: e.target.value })}
-                  placeholder="Enter name"
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Mobile Number</label>
-                <input
-                  type="tel"
-                  value={walkInForm.guest_mobile}
-                  onChange={(e) => setWalkInForm({ ...walkInForm, guest_mobile: e.target.value })}
-                  placeholder="Enter mobile"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Select Services</label>
-                <div className="modal-service-grid">
-                  {salonServices.map(service => (
-                    <div
-                      key={service.id}
-                      className={`modal-service-item ${walkInForm.service_ids.includes(service.id) ? 'selected' : ''}`}
-                      onClick={() => toggleServiceSelection(service.id)}
-                    >
-                      <span>{service.name}</span>
-                      <span>₹{service.price}</span>
+            {walkInError && <div className="error-message" style={{ margin: '0 1.5rem' }}>{walkInError}</div>}
+            <form onSubmit={handleWalkInSubmit} className="walkin-form">
+              {walkInStep === 1 ? (
+                <div className="walkin-grid">
+                  <div className="walkin-details-col">
+                    <div className="form-group">
+                      <label>Customer Name</label>
+                      <input
+                        type="text"
+                        value={walkInForm.guest_name}
+                        onChange={(e) => setWalkInForm({ ...walkInForm, guest_name: e.target.value })}
+                        placeholder="Enter name"
+                        required
+                      />
                     </div>
-                  ))}
+                    <div className="form-group">
+                      <label>Mobile Number</label>
+                      <input
+                        type="tel"
+                        value={walkInForm.guest_mobile}
+                        onChange={(e) => setWalkInForm({ ...walkInForm, guest_mobile: e.target.value })}
+                        placeholder="Enter mobile"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="walkin-services-col">
+                    <div className="form-group">
+                      <label>Select Service(s)</label>
+                      <div className="service-options walkin-service-options">
+                        {salonServices.map(service => (
+                          <button
+                            key={service.id}
+                            type="button"
+                            className={`service-btn ${walkInForm.service_ids.includes(service.id) ? 'active' : ''}`}
+                            onClick={() => toggleServiceSelection(service.id)}
+                          >
+                            <span>{service.name}</span>
+                            <span>₹{service.price} • {service.duration} min</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="walkin-grid">
+                  <div className="walkin-details-col">
+                    <div className="form-group">
+                      <label>Select Date</label>
+                      <input
+                        type="date"
+                        value={walkInForm.appointment_date}
+                        onChange={(e) => setWalkInForm({ ...walkInForm, appointment_date: e.target.value, slot_start: '' })}
+                        min={new Date().toISOString().split('T')[0]}
+                        className="form-control"
+                        required
+                      />
+                    </div>
+                    <div className="form-group checkbox-group">
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={walkInForm.confirm}
+                          onChange={(e) => setWalkInForm({ ...walkInForm, confirm: e.target.checked })}
+                        />
+                        <span>MARK AS CHECKED-IN IMMEDIATELY</span>
+                      </label>
+                    </div>
+                  </div>
 
-              <div className="form-group checkbox-group">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={walkInForm.confirm}
-                    onChange={(e) => setWalkInForm({ ...walkInForm, confirm: e.target.checked })}
-                  />
-                  Mark as checked-in immediately
-                </label>
-              </div>
+                  <div className="walkin-services-col">
+                    <div className="form-group">
+                      <label>Available Slots</label>
+                      {loadingWalkInSlots ? (
+                        <div className="hint">Loading available slots...</div>
+                      ) : walkInSlots.length === 0 ? (
+                        <div className="hint text-error">No slots available for this date</div>
+                      ) : (
+                        <div className="slot-grid walkin-slot-grid">
+                          {walkInSlots.map(slot => (
+                            <button
+                              key={slot}
+                              type="button"
+                              className={`slot-btn ${walkInForm.slot_start === slot ? 'active' : ''}`}
+                              onClick={() => setWalkInForm({ ...walkInForm, slot_start: slot })}
+                            >
+                              {formatTime(slot)}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
-              <div className="modal-actions">
-                <button type="button" className="btn btn-ghost" onClick={() => setShowWalkInModal(false)}>
-                  Cancel
+              <div className="modal-actions horizontal-actions">
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => {
+                    if (walkInStep === 1) setShowWalkInModal(false)
+                    else setWalkInStep(1)
+                  }}
+                >
+                  {walkInStep === 1 ? 'Cancel' : 'Back'}
                 </button>
-                <button type="submit" className="btn btn-primary" disabled={updating === 'walkin'}>
-                  {updating === 'walkin' ? 'Booking...' : 'Create Booking'}
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={updating === 'walkin' || walkInForm.service_ids.length === 0}
+                >
+                  {updating === 'walkin'
+                    ? 'Processing...'
+                    : walkInStep === 1 ? 'Choose Slot' : 'Create Booking'}
                 </button>
               </div>
             </form>

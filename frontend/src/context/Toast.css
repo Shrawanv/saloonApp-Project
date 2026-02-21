@@ -1,0 +1,124 @@
+/* ─── Toast Container ──────────────────────────── */
+.toast-container {
+    position: fixed;
+    top: 1.25rem;
+    right: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    z-index: 9999;
+    pointer-events: none;
+    max-width: 400px;
+    width: 100%;
+}
+
+/* ─── Individual Toast ─────────────────────────── */
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    pointer-events: auto;
+    font-size: 0.88rem;
+    font-weight: 500;
+    line-height: 1.4;
+    border-left: 4px solid transparent;
+    backdrop-filter: blur(10px);
+
+    /* entrance animation */
+    animation: toastSlideIn 0.3s var(--ease-out-expo);
+}
+
+.toast-exit {
+    animation: toastSlideOut 0.3s var(--ease-out-expo) forwards;
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(100%) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes toastSlideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateX(100%) scale(0.95);
+    }
+}
+
+/* ─── Toast Type Variants ──────────────────────── */
+.toast-error {
+    background: var(--color-error-bg);
+    color: var(--color-error-text);
+    border-left-color: var(--color-error);
+}
+
+.toast-success {
+    background: var(--color-success-bg);
+    color: var(--color-success-text);
+    border-left-color: var(--color-success);
+}
+
+.toast-warning {
+    background: var(--color-warning-bg);
+    color: var(--color-warning-text);
+    border-left-color: var(--color-warning);
+}
+
+.toast-info {
+    background: var(--color-primary-light);
+    color: var(--color-accent);
+    border-left-color: var(--color-primary);
+}
+
+/* ─── Toast Elements ───────────────────────────── */
+.toast-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.toast-message {
+    flex: 1;
+    min-width: 0;
+}
+
+.toast-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.2rem;
+    border-radius: 4px;
+    color: inherit;
+    opacity: 0.5;
+    transition: opacity var(--transition-fast);
+    display: flex;
+    align-items: center;
+}
+
+.toast-close:hover {
+    opacity: 1;
+}
+
+/* ─── Responsive ───────────────────────────────── */
+@media (max-width: 640px) {
+    .toast-container {
+        right: 0.75rem;
+        left: 0.75rem;
+        max-width: none;
+    }
+}

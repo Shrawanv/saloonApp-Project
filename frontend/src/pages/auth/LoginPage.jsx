@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { useToast } from '../../context/ToastContext'
 import './LoginPage.css'
 
 function LoginPage() {
   const { login, register } = useAuth()
+  const toast = useToast()
   const [mode, setMode] = useState('login')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -32,6 +34,7 @@ function LoginPage() {
 
     if (!result.success) {
       setError(result.error)
+      toast.error(result.error)
     }
     setLoading(false)
   }
@@ -56,6 +59,7 @@ function LoginPage() {
 
     if (!result.success) {
       setError(result.error)
+      toast.error(result.error)
     }
     setLoading(false)
   }

@@ -51,7 +51,7 @@
 }
 
 .search-box:hover {
-  border-color: #c4b5f0;
+  border-color: var(--color-primary-light);
 }
 
 .search-box:focus-within {

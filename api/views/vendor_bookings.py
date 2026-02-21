@@ -113,6 +113,32 @@ class VendorAppointmentUpdateAPIView(APIView):
                 return Response({"detail": "Invalid payment mode."}, status=status.HTTP_400_BAD_REQUEST)
             appointment.payment_mode = new_payment_mode
 
+        # Rescheduling support
+        new_date = request.data.get("appointment_date")
+        new_time = request.data.get("slot_start")
+        
+        if new_date or new_time:
+            from bookings.services import is_slot_available
+            target_date = new_date if new_date else str(appointment.appointment_date)
+            target_time = new_time if new_time else str(appointment.slot_start)
+            
+            # Check availability (excluding current appointment)
+            available = is_slot_available(
+                salon=appointment.salon,
+                appointment_date=target_date,
+                slot_start=target_time,
+                duration_minutes=appointment.duration_minutes,
+                exclude_appointment_id=appointment.id
+            )
+            
+            if not available:
+                return Response({"detail": "The selected slot is no longer available."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            if new_date:
+                appointment.appointment_date = target_date
+            if new_time:
+                appointment.slot_start = target_time
+
         new_status = request.data.get("status")
         if new_status:
             if new_status not in {"BOOKED", "COMPLETED", "CANCELLED"}:

@@ -34,7 +34,7 @@
 
 .config-item select {
   padding: 0.7rem 0.85rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--color-border-muted);
   border-radius: var(--radius-sm);
   font-size: 1rem;
   background: var(--color-card);
@@ -142,7 +142,27 @@
   /* §2 h3 — total label */
   font-weight: 700;
   padding-top: 1.5rem;
+  color: var(--color-text-muted);
+}
+
+.bill-table tfoot .discount-row td {
+  color: var(--color-success-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding-top: 0.5rem;
+  border-bottom: none;
+}
+
+.discount-value {
+  color: var(--color-success-text);
+}
+
+.bill-table tfoot .total-row th {
+  font-size: 1.1rem;
+  /* §2 h3 — total label */
   color: var(--color-primary);
+  padding-top: 1rem;
+  border-top: 2px solid var(--color-primary-light);
 }
 
 .text-right {
@@ -184,7 +204,7 @@
 /* Paid badge — uses global .status-badge.completed color tokens */
 .paid-badge {
   background: #dcfce7;
-  color: #15803d;
+  color: var(--color-success-text);
   padding: 0.3rem 0.75rem;
   border-radius: var(--radius-sm);
   font-size: 0.82rem;
@@ -208,7 +228,7 @@
 }
 
 .paid-success {
-  color: #15803d;
+  color: var(--color-success-text);
   font-weight: 600;
   font-size: 0.9rem;
 }
@@ -217,12 +237,13 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1100;
+  z-index: 1000;
+  /* §13 — consistent modal z-index */
   animation: fadeIn 0.15s ease-out;
 }
 

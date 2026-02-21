@@ -51,6 +51,7 @@ class BookAppointmentAPIView(APIView):
                 appointment_date=data["appointment_date"],
                 slot_start=data["slot_start"],
                 service_ids=data["service_ids"],
+                coupon_code=data.get("coupon_code"),
             )
         except ValidationError as e:
             return Response(

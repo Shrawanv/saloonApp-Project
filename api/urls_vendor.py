@@ -2,8 +2,10 @@
 from django.urls import path
 from api.views.vendor_salons import VendorSalonListCreateAPIView, VendorSalonDetailAPIView
 from api.views.services import VendorServiceListCreateAPIView, VendorServiceDetailAPIView, VendorServiceToggleAPIView
-
+from api.views.vendor_reports import VendorReportsAPIView
 from api.views.media import SalonLogoUpdateAPIView, SalonMediaListCreateAPIView, SalonMediaDeleteAPIView
+
+from api.views.vendor_broadcast import VendorBroadcastListCreateAPIView, VendorBroadcastActionAPIView
 
 urlpatterns = [
     path("salons/", VendorSalonListCreateAPIView.as_view(), name="api-vendor-salon-list"),
@@ -14,4 +16,7 @@ urlpatterns = [
     path("services/", VendorServiceListCreateAPIView.as_view(), name="api-vendor-service-list"),
     path("services/<int:pk>/", VendorServiceDetailAPIView.as_view(), name="api-vendor-service-detail"),
     path("services/<int:pk>/toggle/", VendorServiceToggleAPIView.as_view(), name="api-vendor-service-toggle"),
+    path("reports/", VendorReportsAPIView.as_view(), name="api-vendor-reports"),
+    path("broadcasts/", VendorBroadcastListCreateAPIView.as_view(), name="api-vendor-broadcast-list-create"),
+    path("broadcasts/<int:pk>/", VendorBroadcastActionAPIView.as_view(), name="api-vendor-broadcast-action"),
 ]

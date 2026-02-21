@@ -10,6 +10,8 @@ function PaymentBilling() {
   const [loading, setLoading] = useState(false)
   const [updating, setUpdating] = useState(false)
   const [showQR, setShowQR] = useState(false)
+  const [paymentSuccess, setPaymentSuccess] = useState('')
+  const [paymentError, setPaymentError] = useState('')
 
   const billRef = useRef()
 
@@ -106,8 +108,11 @@ function PaymentBilling() {
 
       await appointmentService.updateAppointmentStatus(selectedAppointment.id, payload.status, null, payload)
 
-      alert(`Payment of Rs. ${selectedAppointment.total_amount} recorded via ${mode}`)
+      const finalAmount = (parseFloat(selectedAppointment.total_amount) - parseFloat(selectedAppointment.discount_amount || 0)).toFixed(2)
+      setPaymentSuccess(`Payment of Rs. ${finalAmount} recorded via ${mode}`)
+      setPaymentError('')
       setShowQR(false)
+      setTimeout(() => setPaymentSuccess(''), 5000)
 
       // Refresh data
       await fetchRecentAppointments()
@@ -117,7 +122,8 @@ function PaymentBilling() {
       setSelectedAppointment(updatedApt)
     } catch (err) {
       console.error('Error updating payment:', err)
-      alert('Failed to process payment')
+      setPaymentError('Failed to process payment')
+      setPaymentSuccess('')
     } finally {
       setUpdating(false)
     }
@@ -136,6 +142,9 @@ function PaymentBilling() {
           <h1>Payment &amp; Billing</h1>
           <p>Select a salon and appointment to generate a bill</p>
         </div>
+
+        {paymentSuccess && <div className="success-message">{paymentSuccess}</div>}
+        {paymentError && <div className="error-message">{paymentError}</div>}
 
         <div className="billing-config card">
           <div className="config-row">
@@ -216,8 +225,24 @@ function PaymentBilling() {
                 </tbody>
                 <tfoot>
                   <tr>
-                    <th className="text-left">Total</th>
+                    <th className="text-left">Subtotal</th>
                     <th className="text-right">Rs. {selectedAppointment.total_amount}</th>
+                  </tr>
+                  <tr className="discount-row">
+                    <td>
+                      Discount{selectedAppointment.coupon_code ? ` (${selectedAppointment.coupon_code})` : ''}
+                    </td>
+                    <td className="text-right discount-value">
+                      {parseFloat(selectedAppointment.discount_amount || 0) > 0
+                        ? `- Rs. ${selectedAppointment.discount_amount}`
+                        : 'Rs. 0'}
+                    </td>
+                  </tr>
+                  <tr className="total-row">
+                    <th className="text-left">Total Payable</th>
+                    <th className="text-right">
+                      Rs. {(parseFloat(selectedAppointment.total_amount) - parseFloat(selectedAppointment.discount_amount || 0)).toFixed(2)}
+                    </th>
                   </tr>
                   {selectedAppointment.payment_status === 'PAID' && (
                     <tr className="payment-info">
@@ -289,7 +314,7 @@ function PaymentBilling() {
                 <span className="qr-icon">QR</span>
               </div>
               <p>UPI ID: salon@{selectedSalonData?.name.toLowerCase().replace(/\s/g, '')}</p>
-              <p className="amount-text">Amount: Rs. {selectedAppointment?.total_amount}</p>
+              <p className="amount-text">Amount: Rs. {(parseFloat(selectedAppointment?.total_amount || 0) - parseFloat(selectedAppointment?.discount_amount || 0)).toFixed(2)}</p>
             </div>
             <div className="modal-actions">
               <button className="btn btn-primary" onClick={() => handleAcceptPayment('Online')}>

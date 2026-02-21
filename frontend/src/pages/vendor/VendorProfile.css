@@ -88,7 +88,7 @@
   background: var(--color-bg);
   border-radius: var(--radius);
   padding: 0.35rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border);
 }
 
 .vendor-tab {
@@ -192,7 +192,7 @@
 
 .vp-status-badge.active {
   background: #dcfce7;
-  color: #15803d;
+  color: var(--color-success-text);
   border: 1px solid #bbf7d0;
 }
 

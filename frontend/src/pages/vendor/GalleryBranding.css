@@ -87,7 +87,7 @@
   aspect-ratio: 1;
   border-radius: var(--radius);
   overflow: hidden;
-  background: #000;
+  background: var(--color-accent);
   box-shadow: var(--shadow-sm);
   transition: transform var(--transition-smooth);
 }
@@ -134,7 +134,7 @@
   background: #f8fafc;
   border-radius: var(--radius);
   color: var(--color-text-muted);
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--color-border-muted);
   font-size: 1rem;
   display: flex;
   flex-direction: column;

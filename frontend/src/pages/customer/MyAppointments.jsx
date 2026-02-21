@@ -8,6 +8,8 @@ function MyAppointments() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [cancelling, setCancelling] = useState(null)
+  const [cancelError, setCancelError] = useState('')
+  const [showCancelConfirm, setShowCancelConfirm] = useState(null)
 
   useEffect(() => {
     fetchAppointments()
@@ -30,15 +32,16 @@ function MyAppointments() {
   }
 
   const handleCancel = async (id) => {
-    if (!confirm('Are you sure you want to cancel this appointment?')) return
-    
     try {
       setCancelling(id)
+      setCancelError('')
       await appointmentService.cancelAppointment(id)
+      setShowCancelConfirm(null)
       fetchAppointments()
     } catch (err) {
       console.error('Error cancelling appointment:', err)
-      alert('Failed to cancel appointment. Please try again.')
+      setCancelError('Failed to cancel appointment. Please try again.')
+      setShowCancelConfirm(null)
     } finally {
       setCancelling(null)
     }
@@ -66,18 +69,18 @@ function MyAppointments() {
     <div className="container">
       <div className="page-header">
         <h1>My Appointments</h1>
-        <p>View and manage your bookings</p>    
+        <p>View and manage your bookings</p>
       </div>
 
-      <div className="appointment-tabs">
+      <div className="profile-tabs">
         <button
-          className={`tab ${filter === 'upcoming' ? 'active' : ''}`}
+          className={`profile-tab ${filter === 'upcoming' ? 'active' : ''}`}
           onClick={() => setFilter('upcoming')}
         >
           Upcoming
         </button>
         <button
-          className={`tab ${filter === 'past' ? 'active' : ''}`}
+          className={`profile-tab ${filter === 'past' ? 'active' : ''}`}
           onClick={() => setFilter('past')}
         >
           Past
@@ -86,15 +89,16 @@ function MyAppointments() {
 
       <div className="appointment-list">
         {loading && <div className="loading-state">Loading appointments...</div>}
-        
+
         {error && <div className="error-state card">{error}</div>}
-        
+        {cancelError && <div className="error-message">{cancelError}</div>}
+
         {!loading && !error && appointments.length === 0 && (
           <div className="empty-state card">
             <p>No {filter} appointments</p>
           </div>
         )}
-        
+
         {!loading && !error && appointments.map((apt) => (
           <div key={apt.id} className="appointment-card card">
             <div className="apt-header">
@@ -111,14 +115,24 @@ function MyAppointments() {
             <p className="apt-datetime">
               📅 {apt.appointment_date} at {formatTime(apt.slot_start)}
             </p>
-            {apt.total_price && (
-              <p className="apt-price">₹{apt.total_price}</p>
-            )}
+            <div className="apt-pricing">
+              {apt.coupon_code && parseFloat(apt.discount_amount) > 0 ? (
+                <>
+                  <span className="apt-price-original">₹{apt.total_price}</span>
+                  <span className="apt-price-final">
+                    ₹{(parseFloat(apt.total_price) - parseFloat(apt.discount_amount)).toFixed(2)}
+                  </span>
+                  <span className="apt-coupon-tag">{apt.coupon_code} applied</span>
+                </>
+              ) : (
+                apt.total_price && <span className="apt-price">₹{apt.total_price}</span>
+              )}
+            </div>
             {filter === 'upcoming' && apt.status !== 'CANCELLED' && (
               <div className="apt-actions">
-                <button 
+                <button
                   className="btn btn-outline btn-sm cancel"
-                  onClick={() => handleCancel(apt.id)}
+                  onClick={() => setShowCancelConfirm(apt.id)}
                   disabled={cancelling === apt.id}
                 >
                   {cancelling === apt.id ? 'Cancelling...' : 'Cancel'}
@@ -128,6 +142,26 @@ function MyAppointments() {
           </div>
         ))}
       </div>
+
+      {/* Cancel Confirmation Modal */}
+      {showCancelConfirm && (
+        <div className="modal-overlay" onClick={() => setShowCancelConfirm(null)}>
+          <div className="modal-content card" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px', textAlign: 'center', padding: '2.5rem' }}>
+            <h3>Cancel Appointment?</h3>
+            <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem' }}>Are you sure you want to cancel this appointment? This cannot be undone.</p>
+            <div className="modal-actions" style={{ flexDirection: 'row', justifyContent: 'center', gap: '1rem' }}>
+              <button className="btn btn-ghost" onClick={() => setShowCancelConfirm(null)}>Keep It</button>
+              <button
+                className="btn btn-primary"
+                onClick={() => handleCancel(showCancelConfirm)}
+                disabled={cancelling === showCancelConfirm}
+              >
+                {cancelling === showCancelConfirm ? 'Cancelling...' : 'Yes, Cancel'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -76,10 +76,10 @@
     flex-direction: column;
     gap: 1.25rem;
     /* §3 form field gap */
-    background: #f8fafc;
+    background: var(--color-bg-secondary);
     padding: 1.75rem;
     border-radius: var(--radius);
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--color-border);
 }
 
 /* 2-col form row — §3 Flexbox & Grid pattern */
@@ -107,7 +107,7 @@
 
 .form-group input {
     padding: 0.75rem;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--color-border-muted);
     border-radius: var(--radius-sm);
     font-size: 1rem;
     transition: all 0.2s;
@@ -126,7 +126,7 @@
     gap: 1rem;
     margin-top: 1rem;
     padding-top: 1.5rem;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--color-border);
 }
 
 /* Read-only details grid — §11 */

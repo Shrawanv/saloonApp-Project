@@ -1,4 +1,283 @@
-/* Reports.css */
+/* Reports.css - Organic & Refined Hierarchy */
 .reports-page {
-  /* no max-width — fills vendor-content area like VendorHome */
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Informational Lists (Customers, Revenue) */
+.entity-list.loose {
+  gap: 1.1rem;
+  margin-top: 0.75rem;
+}
+
+.entity-card.loose-card {
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.entity-card.loose-card.slim {
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius);
+}
+
+.entity-card.loose-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--color-primary-light);
+}
+
+.entity-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  display: block;
+}
+
+.entity-sub-metrics {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.15rem;
+  font-size: 0.82rem;
+  /* §2 small */
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.dot-sep {
+  color: var(--color-border-muted);
+  font-weight: 400;
+}
+
+.entity-stats {
+  gap: 5rem;
+}
+
+/* Compact Reviews */
+.reviews-compact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.review-mini-card {
+  background: var(--color-bg-secondary);
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.review-mini-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-name-small {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--color-accent);
+}
+
+.rating-badge-mini {
+  font-size: 0.82rem;
+  /* §2 small */
+  font-weight: 700;
+  color: var(--color-primary);
+  background: var(--color-card);
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.review-comment-mini {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+  font-style: italic;
+  margin: 0.25rem 0;
+}
+
+.review-date-mini {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  text-align: right;
+}
+
+.modern-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Organic Insights Bar */
+.insights-brief {
+  background: var(--color-primary-lightest);
+  border: 1px solid var(--color-primary-light);
+  padding: 1.25rem 2rem;
+  border-radius: var(--radius);
+  color: var(--color-accent);
+  font-size: 0.95rem;
+}
+
+/* Softer Stat Cards — §8 uses repeat(4, 1fr) for stats */
+.stats-header-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  /* §3 full-width 4-col stats */
+  gap: 1.25rem;
+}
+
+.stat-card.minimal {
+  background: var(--color-card);
+  padding: 1.5rem;
+  /* §4 card padding */
+  border-radius: var(--radius);
+  /* §4 global .card radius */
+  border: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-label {
+  font-size: 0.82rem;
+  /* §2 h4/stat labels */
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
+}
+
+.stat-value.small-main {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.stat-sub {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* Organic Visuals */
+.visuals-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 1.5rem;
+}
+
+.visuals-container.side-by-side {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(45%, 1fr));
+  gap: 1.5rem;
+}
+
+.chart-card.glass-chart {
+  background: var(--color-card);
+  padding: 1.5rem;
+  /* §4 card padding */
+  border-radius: var(--radius);
+  /* §4 global .card radius */
+  border: 1px solid var(--color-border);
+  transition: all var(--transition-smooth);
+}
+
+.chart-card.glass-chart:hover {
+  border-color: var(--color-primary-light);
+  box-shadow: var(--shadow-hover);
+}
+
+.chart-card.stretch {
+  grid-column: 1 / -1;
+}
+
+.chart-header {
+  margin-bottom: 1.5rem;
+}
+
+.chart-header h3 {
+  font-size: 1.1rem;
+  /* §2 h3 — section title */
+  color: var(--color-accent);
+  margin: 0;
+  font-weight: 700;
+}
+
+.chart-header p {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* Removed: pill-tabs override — now uses global .profile-tabs / .profile-tab (§6) */
+
+/* Global Styles Re-use */
+.header-with-selector {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.salon-selector-inline select {
+  padding: 0.6rem 1.25rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  min-width: 200px;
+  background: var(--color-card);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* Cards & Lists */
+.entity-card {
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+}
+
+.review-item-card {
+  border-radius: var(--radius);
+  padding: 1.5rem;
+}
+
+.report-section h3 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1.1rem;
+  /* §2 h3 */
+  color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+  .visuals-container {
+    grid-template-columns: 1fr;
+  }
+
+  .stats-header-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-header-grid {
+    grid-template-columns: 1fr;
+  }
 }

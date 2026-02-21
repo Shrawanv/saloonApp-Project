@@ -24,6 +24,8 @@ function CustomerProfile() {
         confirm_password: ''
     })
     const [updatingPassword, setUpdatingPassword] = useState(false)
+    const [profileSuccess, setProfileSuccess] = useState('')
+    const [profileError, setProfileError] = useState('')
 
     useEffect(() => {
         if (user) {
@@ -51,10 +53,13 @@ function CustomerProfile() {
             const file = new File([croppedBlob], 'avatar.jpg', { type: 'image/jpeg' })
             const updatedUser = await mediaService.uploadProfilePicture(file)
             setUser(updatedUser)
-            alert('Profile picture updated successfully!')
+            setProfileSuccess('Profile picture updated successfully!')
+            setProfileError('')
+            setTimeout(() => setProfileSuccess(''), 5000)
         } catch (err) {
             console.error('Error uploading avatar:', err)
-            alert('Failed to upload profile picture')
+            setProfileError('Failed to upload profile picture')
+            setProfileSuccess('')
         }
     }
 
@@ -65,10 +70,13 @@ function CustomerProfile() {
             const updatedUser = await customerService.updateProfile(formData)
             setUser(updatedUser)
             setIsEditing(false)
-            alert('Profile updated successfully!')
+            setProfileSuccess('Profile updated successfully!')
+            setProfileError('')
+            setTimeout(() => setProfileSuccess(''), 5000)
         } catch (err) {
             console.error('Error updating profile:', err)
-            alert('Failed to update profile. Please check the information provided.')
+            setProfileError('Failed to update profile. Please check the information provided.')
+            setProfileSuccess('')
         } finally {
             setUpdating(false)
         }
@@ -77,7 +85,8 @@ function CustomerProfile() {
     const handlePasswordChange = async (e) => {
         e.preventDefault()
         if (passwordData.new_password !== passwordData.confirm_password) {
-            alert('New passwords do not match!')
+            setProfileError('New passwords do not match!')
+            setProfileSuccess('')
             return
         }
         setUpdatingPassword(true)
@@ -87,13 +96,16 @@ function CustomerProfile() {
                 new_password: passwordData.new_password,
                 confirm_password: passwordData.confirm_password
             })
-            alert('Password updated successfully!')
+            setProfileSuccess('Password updated successfully!')
+            setProfileError('')
+            setTimeout(() => setProfileSuccess(''), 5000)
             setShowPasswordModal(false)
             setPasswordData({ old_password: '', new_password: '', confirm_password: '' })
         } catch (err) {
             console.error('Error updating password:', err)
             const errorMsg = err.response?.data?.old_password || err.response?.data?.detail || 'Failed to update password.'
-            alert(errorMsg)
+            setProfileError(errorMsg)
+            setProfileSuccess('')
         } finally {
             setUpdatingPassword(false)
         }
@@ -113,6 +125,8 @@ function CustomerProfile() {
         <div className="container">
             <div className="profile-page card">
                 <div className="profile-header">
+                    {profileSuccess && <div className="success-message">{profileSuccess}</div>}
+                    {profileError && <div className="error-message">{profileError}</div>}
                     <div className="profile-avatar-container">
                         {getAvatarUrl() ? (
                             <img src={getAvatarUrl()} alt="Avatar" className="profile-avatar-img" />

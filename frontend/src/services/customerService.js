@@ -16,6 +16,11 @@ const customerService = {
         }
         return response.data
     },
+
+    async validateCoupon(salon_id, code) {
+        const response = await api.post('/coupons/validate/', { salon_id, code })
+        return response.data
+    },
 }
 
 export default customerService

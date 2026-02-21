@@ -10,6 +10,9 @@ const GalleryBranding = () => {
   const [gallery, setGallery] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [gallerySuccess, setGallerySuccess] = useState('')
+  const [galleryError, setGalleryError] = useState('')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null)
 
   useEffect(() => {
     fetchSalonData()
@@ -40,10 +43,13 @@ const GalleryBranding = () => {
     try {
       const updatedSalon = await mediaService.uploadSalonLogo(salon.id, file)
       setSalon(updatedSalon)
-      alert('Logo updated successfully!')
+      setGallerySuccess('Logo updated successfully!')
+      setGalleryError('')
+      setTimeout(() => setGallerySuccess(''), 5000)
     } catch (err) {
       console.error('Error uploading logo:', err)
-      alert('Failed to upload logo')
+      setGalleryError('Failed to upload logo')
+      setGallerySuccess('')
     }
   }
 
@@ -52,20 +58,29 @@ const GalleryBranding = () => {
       const mediaType = file.type.startsWith('video/') ? 'VIDEO' : 'IMAGE'
       const newMedia = await mediaService.uploadSalonGalleryMedia(salon.id, file, mediaType)
       setGallery([newMedia, ...gallery])
+      setGallerySuccess('Media uploaded successfully!')
+      setGalleryError('')
+      setTimeout(() => setGallerySuccess(''), 5000)
     } catch (err) {
       console.error('Error uploading media:', err)
-      alert('Failed to upload media')
+      setGalleryError('Failed to upload media')
+      setGallerySuccess('')
     }
   }
 
   const handleDeleteMedia = async (mediaId) => {
-    if (!window.confirm('Are you sure you want to delete this item?')) return
     try {
       await mediaService.deleteGalleryMedia(mediaId)
       setGallery(gallery.filter(m => m.id !== mediaId))
+      setGallerySuccess('Media deleted.')
+      setGalleryError('')
+      setShowDeleteConfirm(null)
+      setTimeout(() => setGallerySuccess(''), 5000)
     } catch (err) {
       console.error('Error deleting media:', err)
-      alert('Failed to delete media')
+      setGalleryError('Failed to delete media')
+      setGallerySuccess('')
+      setShowDeleteConfirm(null)
     }
   }
 
@@ -85,6 +100,9 @@ const GalleryBranding = () => {
         <h1>Gallery & Branding</h1>
         <p>Manage your salon's visual identity and showcase your work.</p>
       </header>
+
+      {gallerySuccess && <div className="success-message">{gallerySuccess}</div>}
+      {galleryError && <div className="error-message">{galleryError}</div>}
 
       <section className="branding-section card">
         <div className="section-header">
@@ -136,7 +154,7 @@ const GalleryBranding = () => {
               )}
               <button
                 className="delete-btn"
-                onClick={() => handleDeleteMedia(item.id)}
+                onClick={() => setShowDeleteConfirm(item.id)}
                 title="Delete item"
               >
                 &times;
@@ -150,6 +168,20 @@ const GalleryBranding = () => {
           )}
         </div>
       </section>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="modal-overlay" onClick={() => setShowDeleteConfirm(null)}>
+          <div className="modal-content card" onClick={e => e.stopPropagation()} style={{ maxWidth: '440px', textAlign: 'center', padding: '2.5rem' }}>
+            <h3>Delete Media?</h3>
+            <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem' }}>Are you sure you want to delete this item? This cannot be undone.</p>
+            <div className="modal-actions" style={{ flexDirection: 'row', justifyContent: 'center', gap: '1rem' }}>
+              <button className="btn btn-ghost" onClick={() => setShowDeleteConfirm(null)}>Cancel</button>
+              <button className="btn btn-primary" onClick={() => handleDeleteMedia(showDeleteConfirm)}>Yes, Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

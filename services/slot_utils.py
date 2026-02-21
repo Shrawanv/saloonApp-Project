@@ -69,7 +69,7 @@ def _appointment_end_time(appointment, salon):
     return end_dt.time()
 
 
-def get_slot_availability(salon, target_date, duration_minutes=None, exclude_past_slots=True):
+def get_slot_availability(salon, target_date, duration_minutes=None, exclude_past_slots=True, exclude_appointment_id=None):
     """
     Returns only available slots for the given duration.
     Excludes break time and past slots when date is today. For variable duration,
@@ -81,13 +81,15 @@ def get_slot_availability(salon, target_date, duration_minutes=None, exclude_pas
     availability = []
 
     # One query: all booked appointments for this salon/date
-    existing = list(
-        Appointment.objects.filter(
-            salon=salon,
-            appointment_date=target_date,
-            status="BOOKED",
-        ).values("slot_start", "duration_minutes")
+    existing_qs = Appointment.objects.filter(
+        salon=salon,
+        appointment_date=target_date,
+        status="BOOKED",
     )
+    if exclude_appointment_id:
+        existing_qs = existing_qs.exclude(id=exclude_appointment_id)
+        
+    existing = list(existing_qs.values("slot_start", "duration_minutes"))
 
     for slot in slots:
         slot_start_dt = datetime.combine(target_date, slot["start"])

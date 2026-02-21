@@ -1,7 +1,7 @@
 """DRF serializers for API. Validation only; no UI assumptions."""
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from salons.models import Salon, Review, SalonMedia
+from salons.models import Salon, Review, SalonMedia, BroadcastOffer
 from services.models import Service
 from bookings.models import Appointment
 
@@ -128,6 +128,8 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "total_amount",
             "total_price",
             "duration_minutes",
+            "coupon_code",
+            "discount_amount",
             "services",
             "services_names",
             "services_details",
@@ -136,7 +138,7 @@ class AppointmentSerializer(serializers.ModelSerializer):
             "payment_mode",
             "created_at",
         )
-        read_only_fields = ("id", "user", "total_amount", "duration_minutes", "created_at", "checked_in_at")
+        read_only_fields = ("id", "user", "total_amount", "discount_amount", "duration_minutes", "created_at", "checked_in_at")
 
     def get_user_name(self, obj):
         if obj.user:
@@ -184,6 +186,7 @@ class BookAppointmentSerializer(serializers.Serializer):
     slot_start = serializers.TimeField(required=True)
     guest_name = serializers.CharField(required=False, max_length=100, allow_blank=True)
     guest_mobile = serializers.CharField(required=False, max_length=15, allow_blank=True)
+    coupon_code = serializers.CharField(required=False, max_length=50, allow_blank=True, allow_null=True)
 
     def validate(self, attrs):
         salon_id = attrs["salon_id"]
@@ -200,6 +203,13 @@ class BookAppointmentSerializer(serializers.Serializer):
                 {"service_ids": "All services must exist and belong to the given salon."}
             )
         return attrs
+
+
+class BroadcastOfferSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BroadcastOffer
+        fields = ("id", "salon", "title", "message", "offer_code", "discount_type", "discount_value", "expiry_date", "target_audience", "is_sent", "created_at")
+        read_only_fields = ("id", "created_at", "is_sent")
 
 class ReviewSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source="user.username", read_only=True)

@@ -162,7 +162,7 @@ button {
 .btn-ghost {
   background: transparent;
   color: var(--color-text-muted);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border);
 }
 
 .btn-ghost:hover:not(:disabled) {
@@ -231,8 +231,8 @@ button {
 .status-badge.confirmed,
 .status-badge.active {
   background: #dcfce7;
-  color: #15803d;
-  border: 1px solid #bbf7d0;
+  color: var(--color-success-text);
+  border: 1px solid var(--color-success-border);
 }
 
 .status-badge.completed {
@@ -259,9 +259,9 @@ button {
   text-align: center;
   padding: 3rem 1rem;
   color: var(--color-text-muted);
-  background: #f8fafc;
+  background: var(--color-bg);
   border-radius: var(--radius);
-  border: 1px dashed #cbd5e1;
+  border: 1px dashed var(--color-border-muted);
 }
 
 .empty-state p {
@@ -282,10 +282,10 @@ button {
 
 .success-message {
   background: #dcfce7;
-  color: #15803d;
+  color: var(--color-success-text);
   padding: 0.75rem 1rem;
   border-radius: var(--radius-sm);
-  border: 1px solid #bbf7d0;
+  border: 1px solid var(--color-success-border);
   font-size: 0.9rem;
   margin-bottom: 1rem;
 }
@@ -315,7 +315,7 @@ button {
   background: var(--color-bg);
   border-radius: var(--radius);
   padding: 0.35rem;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--color-border);
   margin-bottom: 1.5rem;
 }
 

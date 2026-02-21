@@ -43,48 +43,36 @@ class Salon(models.Model):
         return self.appointments.filter(
             appointment_date=date.today(),
             status="BOOKED",
-            checked_in_at__isnull=True
+            checked_in_at__isnull=False
         ).count()
 
     @property
     def waiting_time(self):
         """
         Calculates estimated waiting time in minutes for a new walk-in.
-        Very basic implementation: 
-        1. Find all BOOKED appointments for today.
-        2. Those already checked-in are 'occupying' capacity.
-        3. Those not checked-in but scheduled are in the 'queue'.
+        Based strictly on customers physically present (checked-in).
         """
-        from datetime import date, datetime
+        from datetime import date
         today = date.today()
-        now = datetime.now().time()
         
-        # Appointments already checked in and (theoretically) in progress
-        in_progress = self.appointments.filter(
+        # Only consider people present in the salon (checked-in)
+        present_appointments = self.appointments.filter(
             appointment_date=today,
             status="BOOKED",
             checked_in_at__isnull=False
-        ).count()
+        )
 
-        # How many slots are free RIGHT NOW
-        free_slots = max(0, self.max_capacity_per_slot - in_progress)
-
-        # People waiting but not yet checked in
-        queued_appointments = self.appointments.filter(
-            appointment_date=today,
-            status="BOOKED",
-            checked_in_at__isnull=True
-        ).order_by('slot_start')
-
-        if queued_appointments.count() < free_slots:
+        if present_appointments.count() < self.max_capacity_per_slot:
             return 0
 
-        # Simple heuristic: average 30 mins per person in queue if all chairs are full
-        # Or we can look at the average duration of their services
-        total_queued_duration = sum(a.duration_minutes for a in queued_appointments)
+        # Simple heuristic: average remaining time per chair
+        # We use total duration of those present divided by number of chairs
+        total_duration = sum(a.duration_minutes for a in present_appointments)
         
-        # If we have N chairs, the wait time is total_duration / N
-        return round(total_queued_duration / self.max_capacity_per_slot)
+        # If we have 2 chairs and 2 people (30m each), wait is ~15-30m.
+        # Total (60) / 2 = 30. This represents the average wait for a NEW person
+        # if they join the end of the current physical presence.
+        return round(total_duration / self.max_capacity_per_slot)
 
 class SalonMedia(models.Model):
     salon = models.ForeignKey(Salon, on_delete=models.CASCADE, related_name="media")
@@ -110,3 +98,33 @@ class Review(models.Model):
 
     def __str__(self):
         return f"{self.salon.name} - {self.rating}* by {self.user}"
+
+class BroadcastOffer(models.Model):
+    salon = models.ForeignKey(Salon, on_delete=models.CASCADE, related_name="broadcasts")
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    offer_code = models.CharField(max_length=50, blank=True, null=True)
+    discount_type = models.CharField(
+        max_length=10,
+        choices=[("PERCENT", "Percentage"), ("FLAT", "Flat Amount")],
+        default="PERCENT",
+    )
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    expiry_date = models.DateField(null=True, blank=True)
+    target_audience = models.CharField(
+        max_length=20,
+        choices=[
+            ("ALL", "All Customers"),
+            ("LOYAL", "Loyal Customers Only"),
+            ("NEW", "New Customers Only"),
+        ],
+        default="ALL",
+    )
+    is_sent = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.title} - {self.salon.name}"
