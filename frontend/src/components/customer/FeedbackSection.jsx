@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { reviewService } from '../../services'
 import './FeedbackSection.css'
 
 function FeedbackSection({ salonId }) {
   const [reviews, setReviews] = useState([])
   const [newFeedback, setNewFeedback] = useState('')
-  const [rating, setRating] = useState(5)
+  const [rating, setRating] = useState(0)
+  const [hoveredStar, setHoveredStar] = useState(0)
+  const [animatingStar, setAnimatingStar] = useState(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
@@ -29,7 +31,10 @@ function FeedbackSection({ salonId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!newFeedback.trim()) return
+    if (rating === 0) {
+      setError('Please select a rating.')
+      return
+    }
 
     try {
       setSubmitting(true)
@@ -39,8 +44,9 @@ function FeedbackSection({ salonId }) {
         comment: newFeedback
       })
       setNewFeedback('')
-      setRating(5)
-      fetchReviews() // Refresh list
+      setRating(0)
+      setHoveredStar(0)
+      fetchReviews()
     } catch (err) {
       console.error('Error submitting feedback:', err)
       setError(err.response?.data?.detail || 'Failed to submit feedback. Are you logged in?')
@@ -49,13 +55,38 @@ function FeedbackSection({ salonId }) {
     }
   }
 
+  const handleStarClick = (star) => {
+    setRating(star)
+    setAnimatingStar(star)
+    setTimeout(() => setAnimatingStar(null), 350)
+  }
+
   const formatDate = (dateStr) => {
     const date = new Date(dateStr)
     return date.toLocaleDateString()
   }
 
+  const renderStar = (index) => {
+    const filled = index <= (hoveredStar || rating)
+    return (
+      <button
+        key={index}
+        type="button"
+        className={`star-btn${filled ? ' star-filled' : ''}${animatingStar === index ? ' star-animate' : ''}`}
+        onClick={() => handleStarClick(index)}
+        onMouseEnter={() => setHoveredStar(index)}
+        onMouseLeave={() => setHoveredStar(0)}
+        aria-label={`Rate ${index} star${index > 1 ? 's' : ''}`}
+      >
+        <svg width="24" height="24" viewBox="0 0 24 24" fill={filled ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+        </svg>
+      </button>
+    )
+  }
+
   return (
-    <div className="feedback-section container-center">
+    <div className="feedback-section">
       <div className="feedback-form card">
         <h3>Give Feedback</h3>
         <p className="feedback-hint">How was your visit? Share your thoughts below.</p>
@@ -63,17 +94,9 @@ function FeedbackSection({ salonId }) {
         {error && <p className="error-text">{error}</p>}
 
         <div className="rating-input">
-          <label>Overall Rating:</label>
+          <label>Overall Rating</label>
           <div className="star-select">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                className="star-btn"
-                onClick={() => setRating(star)}
-              >
-                {rating >= star ? '⭐' : '☆'}
-              </button>
-            ))}
+            {[1, 2, 3, 4, 5].map(renderStar)}
           </div>
         </div>
 
@@ -81,7 +104,7 @@ function FeedbackSection({ salonId }) {
           placeholder="Write your review here... (Optional)"
           value={newFeedback}
           onChange={(e) => setNewFeedback(e.target.value)}
-          rows={5}
+          rows={4}
         />
 
         <button

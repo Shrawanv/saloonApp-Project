@@ -100,9 +100,33 @@
   box-shadow: 0 2px 8px rgba(168, 85, 247, 0.35);
 }
 
-/* Tab content area */
+/* Tab content area — consistent two-column grid for all tabs.
+   Two-column tabs span both columns; single-card tabs sit in col-1 only. */
 .dashboard-content {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.5rem;
   min-height: 400px;
+  max-width: 1000px;
+}
+
+/* Two-column tabs manage their own internal layout → span full width */
+.dashboard-content>.salon-profile-container,
+.dashboard-content>.book-slot-layout {
+  grid-column: 1 / -1;
+}
+
+/* Single-card tabs → left column only (matches left panel width) */
+.dashboard-content>.live-queue,
+.dashboard-content>.price-list,
+.dashboard-content>.feedback-section {
+  grid-column: 1;
+}
+
+/* Loading / error states also span full */
+.dashboard-content>.loading-state,
+.dashboard-content>.error-state {
+  grid-column: 1 / -1;
 }
 
 /* Guest login banner */

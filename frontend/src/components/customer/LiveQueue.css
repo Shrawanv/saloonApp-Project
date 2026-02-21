@@ -1,6 +1,4 @@
-.live-queue {
-  max-width: 500px;
-}
+.live-queue {}
 
 .queue-header {
   display: flex;

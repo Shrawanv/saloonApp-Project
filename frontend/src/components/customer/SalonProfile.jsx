@@ -5,6 +5,7 @@ import './SalonProfile.css'
 function SalonProfile({ salon }) {
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
+  const [selectedMedia, setSelectedMedia] = useState(null)
 
   useEffect(() => {
     if (salon?.id) {
@@ -60,7 +61,7 @@ function SalonProfile({ salon }) {
               )}
             </div>
             <div className="profile-title-row">
-              <h3>About {salon.name}</h3>
+              <h3>{salon.name}</h3>
               {(salon.average_rating !== undefined) && (
                 <div className="profile-rating">
                   <span className="star">⭐</span>
@@ -75,23 +76,6 @@ function SalonProfile({ salon }) {
             professional staff. Book your slot today and experience the best grooming services.
           </p>
         </div>
-
-        {salon.media && salon.media.length > 0 && (
-          <div className="work-gallery-section">
-            <h3>Work Gallery</h3>
-            <div className="work-gallery-grid">
-              {salon.media.map(item => (
-                <div key={item.id} className="work-gallery-item">
-                  {item.media_type === 'IMAGE' ? (
-                    <img src={getMediaUrl(item.file)} alt="Gallery Item" />
-                  ) : (
-                    <video src={getMediaUrl(item.file)} controls />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         <div className="salon-details">
           <h3>Salon Details</h3>
@@ -122,27 +106,42 @@ function SalonProfile({ salon }) {
         </div>
       </div>
 
-      <div className="salon-reviews-sidebar card">
-        <h3>Customer Reviews</h3>
-        {loading ? (
-          <p>Loading reviews...</p>
-        ) : reviews.length === 0 ? (
-          <p className="no-reviews">No reviews yet. Be the first to share your experience!</p>
-        ) : (
-          <div className="reviews-list">
-            {reviews.map((fb) => (
-              <div key={fb.id} className="review-item">
-                <div className="review-header">
-                  <span className="review-user">{fb.user_name || 'Anonymous'}</span>
-                  <span className="review-stars">{'⭐'.repeat(fb.rating)}</span>
-                </div>
-                <p className="review-text">{fb.comment}</p>
-                <span className="review-date">{formatDate(fb.created_at)}</span>
+      <div className="salon-gallery-sidebar card">
+        <h3>Work Gallery</h3>
+        {salon.media && salon.media.length > 0 ? (
+          <div className="work-gallery-grid">
+            {salon.media.map(item => (
+              <div
+                key={item.id}
+                className="work-gallery-item"
+                onClick={() => setSelectedMedia(item)}
+              >
+                {item.media_type === 'IMAGE' ? (
+                  <img src={getMediaUrl(item.file)} alt="Gallery Item" />
+                ) : (
+                  <video src={getMediaUrl(item.file)} />
+                )}
               </div>
             ))}
           </div>
+        ) : (
+          <p className="no-media">No photos available yet.</p>
         )}
       </div>
+
+      {/* Media Zoom Modal */}
+      {selectedMedia && (
+        <div className="media-modal-overlay" onClick={() => setSelectedMedia(null)}>
+          <div className="media-modal-content" onClick={e => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={() => setSelectedMedia(null)}>✕</button>
+            {selectedMedia.media_type === 'IMAGE' ? (
+              <img src={getMediaUrl(selectedMedia.file)} alt="Zoomed Media" />
+            ) : (
+              <video src={getMediaUrl(selectedMedia.file)} controls autoPlay />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
